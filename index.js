@@ -9,10 +9,10 @@ app.use(cors())
 app.use(express.json())
 
 
-app.get('/',(req,res)=>{
-    res.send('server running')
-})
+app.get('/', (req,res)=>{
+    res.send('server running perfectly');
+});
 
-app.listen(port,()=>{
-    console.log(`server running on the port `,port)
+app.listen(port, ()=>{
+    console.log(`server running on the port `, port)
 })

@@ -33,7 +33,7 @@ async function run() {
             const result = await userCollection.insertOne({ name, email })
             res.send(result)
         })
-
+ 
 
 
     }

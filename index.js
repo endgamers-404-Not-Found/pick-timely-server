@@ -12,6 +12,8 @@ app.use(express.json())
 app.get('/',(req,res)=>{
     res.send('server running')
 })
+// api
+
 
 app.listen(port,()=>{
     console.log(`server running on the port `,port)

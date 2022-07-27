@@ -19,6 +19,7 @@ async function run() {
 
         await client.connect();
         const userCollection = client.db("Pick-Timely").collection("userCollection");
+        const Packages = client.db("Pick-Timely").collection("Packages");
 
         // basic server
         app.get('/', async (req, res) => {
@@ -31,6 +32,13 @@ async function run() {
             const name = req.body.name;
             const email = req.body.email;
             const result = await userCollection.insertOne({ name, email })
+            res.send(result)
+        })
+
+
+        //get all packages
+        app.get("/packages",async(req,res)=>{
+            const result = await Packages.find().toArray();
             res.send(result)
         })
 

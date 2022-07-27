@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors())
@@ -19,6 +19,7 @@ async function run() {
 
         await client.connect();
         const userCollection = client.db("Pick-Timely").collection("userCollection");
+        const Packages = client.db("Pick-Timely").collection("Packages");
 
         // basic server
         app.get('/', async (req, res) => {
@@ -33,7 +34,19 @@ async function run() {
             const result = await userCollection.insertOne({ name, email })
             res.send(result)
         })
- 
+
+        //get all the package
+        app.get('/packages', async (req, res) => {
+            const packages = await Packages.find().toArray()
+            res.send(packages)
+        })
+
+        app.get('/package/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const result = await Packages.findOne(query);
+            res.send(result)
+        })
 
 
     }

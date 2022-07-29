@@ -25,7 +25,6 @@ async function run() {
         await client.connect();
         const userCollection = client.db("Pick-Timely").collection("userCollection");
         const Packages = client.db("Pick-Timely").collection("Packages");
-        const profileCollection = client.db("Profile").collection("profileCollection")
         const hostCollection = client.db("Pick-Timely").collection("hoster");
         const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
 
@@ -61,7 +60,7 @@ async function run() {
             const updateDoc = {
                 $set: profile,
             };
-            const result = await profileCollection.updateOne(filter, updateDoc, options);
+            const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send({ success: true, result });
         });
 
@@ -69,11 +68,11 @@ async function run() {
         app.get('/profile/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
-            const result = await profileCollection.find(query).toArray();
+            const result = await userCollection.findOne(query);
             res.send(result);
         });
 
-        })
+        
 
         //get a package by id
         app.get('/package/:id',async(req,res)=>{

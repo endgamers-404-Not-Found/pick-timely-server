@@ -70,7 +70,7 @@ async function run() {
             const query = { email: email };
             const result = await userCollection.findOne(query);
             res.send(result);
-        });
+        }); 
 
         
 
@@ -109,7 +109,7 @@ async function run() {
           $set: {
             transactionId: `${stripeReturn.id}`, status: `${price ===130 ? 'corporate':'team'}`
           }
-        }
+        };
         const result = await userCollection.updateOne(filter, updateDoc, options);
         res.send(result)
       })

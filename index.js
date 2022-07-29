@@ -3,8 +3,9 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 app.use(cors())
 app.use(express.json())
@@ -42,6 +43,45 @@ async function run() {
             res.send(result)
         })
 
+        //get a package by id
+        app.get('/package/:id',async(req,res)=>{
+            const id=req.params.id;
+            const query = {_id:ObjectId(id)}
+            const result= await Packages.findOne(query)
+            res.send(result);
+        })
+
+
+        //create a payment intent
+        app.post('/createPaymentIntent', async (req, res) => {
+            const { price } = req.body;
+            // console.log(cost)
+            const amount = parseInt(price) * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount: amount,
+              currency: 'usd',
+              payment_method_types: ['card']
+            })
+            res.send({ clientSecret: paymentIntent.client_secret })
+          })
+
+
+          //update user data after payment
+            //update after payment
+    app.put('/payment/:email', async (req, res) => {
+        const email = req.params.email;
+        const stripeReturn = req.body.paymentIntent;
+        const price = req.body.price;
+        const filter = { email:email };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            transactionId: `${stripeReturn.id}`, status: `${price ===130 ? 'corporate':'team'}`
+          }
+        }
+        const result = await userCollection.updateOne(filter, updateDoc, options);
+        res.send(result)
+      })
 
 
     }

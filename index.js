@@ -109,7 +109,7 @@ async function run() {
           $set: {
             transactionId: `${stripeReturn.id}`, status: `${price ===130 ? 'corporate':'team'}`
           }
-        }
+        };
         const result = await userCollection.updateOne(filter, updateDoc, options);
         res.send(result)
       })

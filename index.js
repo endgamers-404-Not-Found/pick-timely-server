@@ -21,6 +21,8 @@ async function run() {
         await client.connect();
         const userCollection = client.db("Pick-Timely").collection("userCollection");
         const Packages = client.db("Pick-Timely").collection("Packages");
+        const hostCollection = client.db("Pick-Timely").collection("hoster");
+        const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
 
         // basic server
         app.get('/', async (req, res) => {
@@ -82,6 +84,36 @@ async function run() {
         const result = await userCollection.updateOne(filter, updateDoc, options);
         res.send(result)
       })
+
+      //get Host data
+      app.get("/hoster",async(req, res)=>{
+        const result = await hostCollection.find().toArray();
+        res.send(result)
+    });
+
+    app.post('/hoster', async (req, res)=>{
+        const newSchedule = req.body;
+        const result = await hostCollection.insertOne(newSchedule);
+        res.send(result);
+    });
+
+    app.get('/hoster/:id', async (req, res)=>{
+        const id = req.params.id;
+        const query = {_id:ObjectId(id)};
+        const result = await hostCollection.findOne(query);
+        res.send(result);
+    });
+
+    app.post('/schedule', async (req, res)=>{
+        const newSchedule = req.body;
+        const result = await meetingCollection.insertOne(newSchedule);
+        res.send(result);
+    });
+
+    app.get("/schedule", async(req, res)=>{
+        const result = await meetingCollection.find().toArray();
+        res.send(result)
+    });
 
 
     }

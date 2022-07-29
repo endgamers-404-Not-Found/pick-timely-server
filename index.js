@@ -11,6 +11,10 @@ app.use(cors())
 app.use(express.json())
 
 
+app.get('/',(req,res)=>{
+    res.send('server running')
+})
+
 
 const uri = `mongodb+srv://${process.env.Name}:${process.env.Pass}@cluster0.sbqudjz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });

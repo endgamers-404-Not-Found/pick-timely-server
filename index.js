@@ -25,6 +25,10 @@ async function run() {
         await client.connect();
         const userCollection = client.db("Pick-Timely").collection("userCollection");
         const Packages = client.db("Pick-Timely").collection("Packages");
+        const hostCollection = client.db("Pick-Timely").collection("hoster");
+        const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
+        const reviewCollection = client.db("Pick-Timely").collection("userReviews")
+
 
         // basic server
         app.get('/', async (req, res) => {
@@ -42,10 +46,34 @@ async function run() {
 
 
         //get all packages
-        app.get("/packages",async(req,res)=>{
+        app.get("/packages", async (req, res) => {
             const result = await Packages.find().toArray();
             res.send(result)
-        })
+
+        });
+
+        //updating users profile
+        app.put('/update/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const profile = req.body;
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: profile,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send({ success: true, result });
+        });
+
+         //get profile data.
+        app.get('/profile/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result);
+        }); 
+
+        
 
         //get a package by id
         app.get('/package/:id',async(req,res)=>{
@@ -82,10 +110,57 @@ async function run() {
           $set: {
             transactionId: `${stripeReturn.id}`, status: `${price ===130 ? 'corporate':'team'}`
           }
-        }
+        };
         const result = await userCollection.updateOne(filter, updateDoc, options);
         res.send(result)
       })
+
+      //get Host data
+      app.get("/hoster",async(req, res)=>{
+        const result = await hostCollection.find().toArray();
+        res.send(result)
+    });
+
+    app.post('/hoster', async (req, res)=>{
+        const newSchedule = req.body;
+        const result = await hostCollection.insertOne(newSchedule);
+        res.send(result);
+    });
+
+    app.get('/hoster/:id', async (req, res)=>{
+        const id = req.params.id;
+        const query = {_id:ObjectId(id)};
+        const result = await hostCollection.findOne(query);
+        res.send(result);
+    });
+
+    app.post('/schedule', async (req, res)=>{
+        const newSchedule = req.body;
+        const result = await meetingCollection.insertOne(newSchedule);
+        res.send(result);
+    });
+
+    app.get("/schedule", async(req, res)=>{
+        const result = await meetingCollection.find().toArray();
+        res.send(result)
+    });
+
+
+
+      // all of review api
+      // post api for review
+      app.post('/review', async (req, res) => {
+        const review = req.body;
+        const result = await reviewCollection.insertOne(review);
+        res.send(result);
+      })
+
+      app.get('/review', async (req, res) => {
+        const query = {};
+        const result = await reviewCollection.find(query).toArray();
+        res.send(result)
+      })
+
 
 
     }

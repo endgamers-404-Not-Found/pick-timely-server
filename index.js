@@ -39,6 +39,7 @@ async function run() {
         const Packages = client.db("Pick-Timely").collection("Packages");
         const hostCollection = client.db("Pick-Timely").collection("hoster");
         const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
+        const reviewCollection = client.db("Pick-Timely").collection("userReviews")
 
 
         // basic server
@@ -179,6 +180,22 @@ async function run() {
               });
             res.send({ status: true })
         })
+
+
+
+      // all of review api
+      // post api for review
+      app.post('/review', async (req, res) => {
+        const review = req.body;
+        const result = await reviewCollection.insertOne(review);
+        res.send(result);
+      })
+
+      app.get('/review', async (req, res) => {
+        const query = {};
+        const result = await reviewCollection.find(query).toArray();
+        res.send(result)
+      })
 
 
 

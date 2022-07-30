@@ -6,14 +6,26 @@ require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const nodemailer = require('nodemailer');
+const mg = require('nodemailer-mailgun-transport');
 
 app.use(cors())
 app.use(express.json())
 
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send('server running')
 })
+
+
+const auth = {
+    auth: {
+        api_key: '465a957dfe39e78925b7aa04eb6436b8-835621cf-a32337bf',
+        domain: 'sandbox10fed7c0860a443595f0f85e8bedfb8b.mailgun.org'
+    }
+}
+
+const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
 
 const uri = `mongodb+srv://${process.env.Name}:${process.env.Pass}@cluster0.sbqudjz.mongodb.net/?retryWrites=true&w=majority`;
@@ -64,21 +76,21 @@ async function run() {
             res.send({ success: true, result });
         });
 
-         //get profile data.
+        //get profile data.
         app.get('/profile/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const result = await userCollection.findOne(query);
             res.send(result);
-        }); 
+        });
 
-        
+
 
         //get a package by id
-        app.get('/package/:id',async(req,res)=>{
-            const id=req.params.id;
-            const query = {_id:ObjectId(id)}
-            const result= await Packages.findOne(query)
+        app.get('/package/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await Packages.findOne(query)
             res.send(result);
         })
 
@@ -89,60 +101,84 @@ async function run() {
             // console.log(cost)
             const amount = parseInt(price) * 100;
             const paymentIntent = await stripe.paymentIntents.create({
-              amount: amount,
-              currency: 'usd',
-              payment_method_types: ['card']
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
             })
             res.send({ clientSecret: paymentIntent.client_secret })
-          })
+        })
 
 
-          //update user data after payment
-            //update after payment
-    app.put('/payment/:email', async (req, res) => {
-        const email = req.params.email;
-        const stripeReturn = req.body.paymentIntent;
-        const price = req.body.price;
-        const filter = { email:email };
-        const options = { upsert: true };
-        const updateDoc = {
-          $set: {
-            transactionId: `${stripeReturn.id}`, status: `${price ===130 ? 'corporate':'team'}`
-          }
-        };
-        const result = await userCollection.updateOne(filter, updateDoc, options);
-        res.send(result)
-      })
+        //update user data after payment
+        //update after payment
+        app.put('/payment/:email', async (req, res) => {
+            const email = req.params.email;
+            const stripeReturn = req.body.paymentIntent;
+            const price = req.body.price;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    transactionId: `${stripeReturn.id}`, status: `${price === 130 ? 'corporate' : 'team'}`
+                }
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
+        })
 
-      //get Host data
-      app.get("/hoster",async(req, res)=>{
-        const result = await hostCollection.find().toArray();
-        res.send(result)
-    });
+        //get Host data
+        app.get("/hoster", async (req, res) => {
+            const result = await hostCollection.find().toArray();
+            res.send(result)
+        });
 
-    app.post('/hoster', async (req, res)=>{
-        const newSchedule = req.body;
-        const result = await hostCollection.insertOne(newSchedule);
-        res.send(result);
-    });
+        app.post('/hoster', async (req, res) => {
+            const newSchedule = req.body;
+            const result = await hostCollection.insertOne(newSchedule);
+            res.send(result);
+        });
 
-    app.get('/hoster/:id', async (req, res)=>{
-        const id = req.params.id;
-        const query = {_id:ObjectId(id)};
-        const result = await hostCollection.findOne(query);
-        res.send(result);
-    });
+        app.get('/hoster/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await hostCollection.findOne(query);
+            res.send(result);
+        });
 
-    app.post('/schedule', async (req, res)=>{
-        const newSchedule = req.body;
-        const result = await meetingCollection.insertOne(newSchedule);
-        res.send(result);
-    });
+        app.post('/schedule', async (req, res) => {
+            const newSchedule = req.body;
+            const result = await meetingCollection.insertOne(newSchedule);
+            res.send(result);
+        });
 
-    app.get("/schedule", async(req, res)=>{
-        const result = await meetingCollection.find().toArray();
-        res.send(result)
-    });
+        app.get("/schedule", async (req, res) => {
+            const result = await meetingCollection.find().toArray();
+            res.send(result)
+        });
+
+        //send email
+
+        app.get('/email', async (req, res) => {
+            nodemailerMailgun.sendMail({
+                from: 'myemail@example.com',
+                to: 'meherabhossain8260@gmail.com', // An array if you have multiple recipients.
+              
+                subject: 'Hey you, awesome!',
+             
+                //You can use "html:" to send HTML email content. It's magic!
+                html: '<b>Wow Big powerful letters</b>',
+                //You can use "text:" to send plain-text content. It's oldschool!
+                text: 'Mailgun rocks, pow agjaj!'
+              }, (err, info) => {
+                if (err) {
+                  console.log(err);
+                }
+                else {
+                  console.log(info);
+                }
+              });
+            res.send({ status: true })
+        })
 
 
 

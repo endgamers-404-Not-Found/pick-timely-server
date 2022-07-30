@@ -2,13 +2,94 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-require('dotenv').config()
+require('dotenv').config();
+const nodemailer = require('nodemailer');
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json());
+
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth:{
+//       user: 'sojonchambugong@gmail.com',
+//       pass: 'wearefine8585'
+//     }
+//   });
+  
+//   function sendScheduleMail(schedule) {
+//       const {name, email, timeSlot, dateFormat, description} = schedule;
+  
+//   const mailOptons = {
+//     from: 'sojonchambugong@gmail.com',
+//     to: "maraksujon27@gmail.com", 
+//     subject: `Your appointment for ${name} on ${dateFormat} at ${timeSlot} is confirmed`,
+//     text: `Your appointment for ${email} on ${dateFormat} at ${timeSlot} is confirmed`,
+//     html: `
+//         <div>
+//           <p>Hello, ${name},</p>
+//           <h3>Your appointment for ${name} is confirmed</h3>
+//           <p className='mb-10'>Looking forward to see you on ${dateFormat} at ${timeSlot} and ${description}</p>
+//           <h4 className="mt-10">Our Address</h4>
+//           <p>Andor kella, Bandorbagh</p>
+//           <p>Bangladesh</p>
+//           <a href="/">unsuscribed</a>
+//         </div>
+//       `
+//   };
+
+//   transporter.sendMail(mailOptons, function(err, data){
+//     if(err){
+//       console.log('something is wrong', err);
+//     } else{
+//       console.log('Email sent', data);
+//     }
+//   });
+
+// }
+
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'sojonchambugong@gmail.com',
+    pass: 'wearefine8585'
+  }
+});
+
+function sendScheduleMail(schedule) {
+  const {email, patientName, treatment, date, slot} = schedule;
+
+const mailOptons = {
+from: 'sojonchambugong@gmail.com', 
+to: email, 
+subject: `Your appointment for ${treatment} on ${date} at ${slot} is confirmed`,
+text: `Your appointment for ${treatment} on ${date} at ${slot} is confirmed`,
+html: `
+    <div>
+      <p>Hello, ${patientName},</p>
+      <h3>Your appointment for ${treatment} is confirmed</h3>
+      <p>Looking forward to see you on ${date} at ${slot}</p>
+      <h4 className="mt-10">Our Address</h4>
+      <p>Andor kella, Bandorbagh</p>
+      <p>Bangladesh</p>
+      <a href="/">unsuscribed</a>
+    </div>
+  `
+};
+
+transporter.sendMail(mailOptons, function(error, info){
+  if (error) {
+    console.log(error);
+  } else {
+    console.log('Email sent: ' + info.response);
+  }
+});
+
+}
 
 
 
@@ -69,7 +150,7 @@ async function run() {
             res.send(result);
         });
 
-        })
+       
 
         //get a package by id
         app.get('/package/:id',async(req,res)=>{
@@ -131,8 +212,9 @@ async function run() {
     });
 
     app.post('/schedule', async (req, res)=>{
-        const newSchedule = req.body;
-        const result = await meetingCollection.insertOne(newSchedule);
+        const schedule = req.body;
+        const result = await meetingCollection.insertOne(schedule);
+        sendScheduleMail(schedule)
         res.send(result);
     });
 
@@ -140,6 +222,7 @@ async function run() {
         const result = await meetingCollection.find().toArray();
         res.send(result)
     });
+
 
 
 

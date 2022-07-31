@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config();
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
@@ -12,84 +12,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 app.use(cors())
 app.use(express.json());
 
-// const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     auth:{
-//       user: 'sojonchambugong@gmail.com',
-//       pass: 'wearefine8585'
-//     }
-//   });
-  
-//   function sendScheduleMail(schedule) {
-//       const {name, email, timeSlot, dateFormat, description} = schedule;
-  
-//   const mailOptons = {
-//     from: 'sojonchambugong@gmail.com',
-//     to: "maraksujon27@gmail.com", 
-//     subject: `Your appointment for ${name} on ${dateFormat} at ${timeSlot} is confirmed`,
-//     text: `Your appointment for ${email} on ${dateFormat} at ${timeSlot} is confirmed`,
-//     html: `
-//         <div>
-//           <p>Hello, ${name},</p>
-//           <h3>Your appointment for ${name} is confirmed</h3>
-//           <p className='mb-10'>Looking forward to see you on ${dateFormat} at ${timeSlot} and ${description}</p>
-//           <h4 className="mt-10">Our Address</h4>
-//           <p>Andor kella, Bandorbagh</p>
-//           <p>Bangladesh</p>
-//           <a href="/">unsuscribed</a>
-//         </div>
-//       `
-//   };
 
-//   transporter.sendMail(mailOptons, function(err, data){
-//     if(err){
-//       console.log('something is wrong', err);
-//     } else{
-//       console.log('Email sent', data);
-//     }
-//   });
-
-// }
-
-
-var transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'sojonchambugong@gmail.com',
-    pass: 'wearefine8585'
-  }
-});
-
-function sendScheduleMail(schedule) {
-  const {email, patientName, treatment, date, slot} = schedule;
-
-const mailOptons = {
-from: 'sojonchambugong@gmail.com', 
-to: email, 
-subject: `Your appointment for ${treatment} on ${date} at ${slot} is confirmed`,
-text: `Your appointment for ${treatment} on ${date} at ${slot} is confirmed`,
-html: `
-    <div>
-      <p>Hello, ${patientName},</p>
-      <h3>Your appointment for ${treatment} is confirmed</h3>
-      <p>Looking forward to see you on ${date} at ${slot}</p>
-      <h4 className="mt-10">Our Address</h4>
-      <p>Andor kella, Bandorbagh</p>
-      <p>Bangladesh</p>
-      <a href="/">unsuscribed</a>
-    </div>
-  `
-};
-
-transporter.sendMail(mailOptons, function(error, info){
-  if (error) {
-    console.log(error);
-  } else {
-    console.log('Email sent: ' + info.response);
-  }
-});
-
-}
 
 
 
@@ -102,15 +25,10 @@ async function run() {
         await client.connect();
         const userCollection = client.db("Pick-Timely").collection("userCollection");
         const Packages = client.db("Pick-Timely").collection("Packages");
-        const profileCollection = client.db("Profile").collection("profileCollection")
         const hostCollection = client.db("Pick-Timely").collection("hoster");
         const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
+        const reviewCollection = client.db("Pick-Timely").collection("userReviews")
 
-
-        // basic server
-        app.get('/', async (req, res) => {
-            res.send('server running')
-        })
 
 
         //post a new user
@@ -138,7 +56,7 @@ async function run() {
             const updateDoc = {
                 $set: profile,
             };
-            const result = await profileCollection.updateOne(filter, updateDoc, options);
+            const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send({ success: true, result });
         });
 
@@ -146,11 +64,11 @@ async function run() {
         app.get('/profile/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
-            const result = await profileCollection.find(query).toArray();
+            const result = await userCollection.findOne(query);
             res.send(result);
-        });
+        }); 
 
-       
+        
 
         //get a package by id
         app.get('/package/:id',async(req,res)=>{
@@ -187,7 +105,7 @@ async function run() {
           $set: {
             transactionId: `${stripeReturn.id}`, status: `${price ===130 ? 'corporate':'team'}`
           }
-        }
+        };
         const result = await userCollection.updateOne(filter, updateDoc, options);
         res.send(result)
       })
@@ -211,6 +129,12 @@ async function run() {
         res.send(result);
     });
 
+    app.get("/schedule", async(req, res)=>{
+      const result = await meetingCollection.find().toArray();
+      res.send(result)
+  });
+
+
     app.post('/schedule', async (req, res)=>{
         const schedule = req.body;
         const result = await meetingCollection.insertOne(schedule);
@@ -218,11 +142,61 @@ async function run() {
         res.send(result);
     });
 
-    app.get("/schedule", async(req, res)=>{
+    
+    app.delete("/schedule/:id", async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id:ObjectId(id)};
+      const result = await meetingCollection.deleteOne(query);
+      res.send(result)
+  });
+
+
+
+
+    app.get("/schedule/dateSchedule", async(req, res)=>{
+      const date = req.body;
+      const today = new Date();
+      console.log(first)
+      const query = {dateFormat:date.dateFormat};
+      const then = new Date(query);
+      const now = new Date();
+ 
+
+      const myDate = Math.abs(then.getTime() - now.getTime());
+      console.log(myDate);
+
+      const finalHours = myDate / (60 * 60 * 1000);
+
+      console.log(finalHours);
+
+      if (finalHours > 24) {
         const result = await meetingCollection.find().toArray();
         res.send(result)
-    });
+      } else {
+        res.send('No schedule available within 24 hours');
+      }
+    
+      
+      
+  });
 
+
+
+
+
+      // all of review api
+      // post api for review
+      app.post('/review', async (req, res) => {
+        const review = req.body;
+        const result = await reviewCollection.insertOne(review);
+        res.send(result);
+      })
+
+      app.get('/review', async (req, res) => {
+        const query = {};
+        const result = await reviewCollection.find(query).toArray();
+        res.send(result)
+      })
 
 
 
@@ -233,6 +207,11 @@ async function run() {
     }
 
 
+        // basic server
+        app.get('/', async (req, res) => {
+          res.send('server running')
+      })
+
 
 
 
@@ -241,8 +220,5 @@ async function run() {
     })
 
 }
-
-
-
 
 run().catch(console.dir)

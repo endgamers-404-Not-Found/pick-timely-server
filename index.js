@@ -18,15 +18,40 @@ app.get('/', (req, res) => {
 })
 
 
-const auth = {
+/* const auth = {
     auth: {
         api_key: '465a957dfe39e78925b7aa04eb6436b8-835621cf-a32337bf',
         domain: 'sandbox10fed7c0860a443595f0f85e8bedfb8b.mailgun.org'
     }
 }
+ */
 
-const nodemailerMailgun = nodemailer.createTransport(mg(auth));
 
+
+/* function sendEmailSchdule(newSchedule) {
+    const { name, timeSlot, description, email, dateFormat } = newSchedule;
+    nodemailerMailgun.sendMail({
+        from: 'myemail@example.com',
+        to: 'meherabhossain8260@gmail.com',
+        subject: `Your interview for ${description}  is on this ${dateFormat} at ${timeSlot} is confirm`,
+        html: `<div>
+            <p>Name:${name}</p>
+            <p>${description}</p>
+            <p></p>      
+        </div>`,
+        text: `Your interview for ${description}  is on this at ${timeSlot} is confirm`
+    }, (err, info) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            console.log(info);
+        }
+    });
+
+
+
+} */
 
 const uri = `mongodb+srv://${process.env.Name}:${process.env.Pass}@cluster0.sbqudjz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -149,53 +174,81 @@ async function run() {
         app.post('/schedule', async (req, res) => {
             const newSchedule = req.body;
             const result = await meetingCollection.insertOne(newSchedule);
+
+            sendEmailSchdule(newSchedule)
             res.send(result);
         });
 
         app.get("/schedule", async (req, res) => {
             const result = await meetingCollection.find().toArray();
+            console.log(result)
             res.send(result)
         });
+
+
+
+        app.get("/scheduleList", async (req, res) => {
+            const dateFormat = req.body
+            console.log(dateFormat)
+            const result = await meetingCollection.find({ dateFormat });
+            res.send(result);
+
+
+        })
 
         //send email
 
         app.get('/email', async (req, res) => {
+            const nodemailer = require('nodemailer');
+            const mg = require('nodemailer-mailgun-transport');
+
+            // This is your API key that you retrieve from www.mailgun.com/cp (free up to 10K monthly emails)
+            const nodemailerMailgun = nodemailer.createTransport(mg(auth));
+            const auth = {
+                auth: {
+                    api_key: '465a957dfe39e78925b7aa04eb6436b8-835621cf-a32337bf',
+                    domain: 'sandbox10fed7c0860a443595f0f85e8bedfb8b.mailgun.org'
+                }
+            }
+
+         
+
             nodemailerMailgun.sendMail({
                 from: 'myemail@example.com',
                 to: 'meherabhossain8260@gmail.com', // An array if you have multiple recipients.
-              
+               
                 subject: 'Hey you, awesome!',
-             
+                'replyTo': 'reply2this@company.com',
                 //You can use "html:" to send HTML email content. It's magic!
                 html: '<b>Wow Big powerful letters</b>',
                 //You can use "text:" to send plain-text content. It's oldschool!
-                text: 'Mailgun rocks, pow agjaj!'
-              }, (err, info) => {
+                text: 'Mailgun rocks, pow pow!'
+            }, (err, info) => {
                 if (err) {
-                  console.log(err);
+                    console.log(`Error: ${err}`);
                 }
                 else {
-                  console.log(info);
+                    console.log(`Response: ${info}`);
                 }
-              });
-            res.send({ status: true })
+            });
         })
 
 
 
-      // all of review api
-      // post api for review
-      app.post('/review', async (req, res) => {
-        const review = req.body;
-        const result = await reviewCollection.insertOne(review);
-        res.send(result);
-      })
 
-      app.get('/review', async (req, res) => {
-        const query = {};
-        const result = await reviewCollection.find(query).toArray();
-        res.send(result)
-      })
+        // all of review api
+        // post api for review
+        app.post('/review', async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        })
+
+        app.get('/review', async (req, res) => {
+            const query = {};
+            const result = await reviewCollection.find(query).toArray();
+            res.send(result)
+        })
 
 
 

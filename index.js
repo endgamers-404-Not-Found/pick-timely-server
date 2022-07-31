@@ -81,6 +81,36 @@ async function run() {
             res.send(result)
         })
 
+        // load all user 
+        app.get("/allUser",async(req, res)=>{
+            const result = await userCollection.find().toArray();
+            res.send(result)
+        });
+
+
+
+        // admin role api 
+        app.put('/allUser/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+              $set: { role: 'admin' },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+          })
+
+          app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
+          })
+
+
+
+      
+
 
         //get all packages
         app.get("/packages", async (req, res) => {
@@ -272,3 +302,4 @@ async function run() {
 
 
 run().catch(console.dir)
+

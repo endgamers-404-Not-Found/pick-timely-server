@@ -1,13 +1,14 @@
 const express = require('express');
 const cors = require('cors');
-// const jwt = require('jsonwebtoken');
+const SendinBlueApi = require('sendinblue-apiv3');
+const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const nodemailer = require('nodemailer');
-const mg = require('nodemailer-mailgun-transport');
+
 
 app.use(cors())
 app.use(express.json())
@@ -17,41 +18,39 @@ app.get('/', (req, res) => {
     res.send('server running')
 })
 
+const defaultClient = SendinBlueApi.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.SIB_API_KEY;
+ 
 
-/* const auth = {
-    auth: {
-        api_key: '465a957dfe39e78925b7aa04eb6436b8-835621cf-a32337bf',
-        domain: 'sandbox10fed7c0860a443595f0f85e8bedfb8b.mailgun.org'
+const api = new SendinBlueApi.AccountApi()
+api.getAccount().then(function(data) {
+  console.log('API called successfully. Returned data: ' + data);
+}, function(error) {
+  console.error(error);
+});
+ 
+
+
+
+
+//use token
+
+function verifyJWT(req, res, next) {
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).send({ message: 'Unauthorization access' })
     }
-}
- */
-
-
-
-/* function sendEmailSchdule(newSchedule) {
-    const { name, timeSlot, description, email, dateFormat } = newSchedule;
-    nodemailerMailgun.sendMail({
-        from: 'myemail@example.com',
-        to: 'meherabhossain8260@gmail.com',
-        subject: `Your interview for ${description}  is on this ${dateFormat} at ${timeSlot} is confirm`,
-        html: `<div>
-            <p>Name:${name}</p>
-            <p>${description}</p>
-            <p></p>      
-        </div>`,
-        text: `Your interview for ${description}  is on this at ${timeSlot} is confirm`
-    }, (err, info) => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            console.log(info);
-        }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+      if (err) {
+        return res.status(403).send({ message: 'Forbidden access' })
+      }
+      req.decoded = decoded;
+      next()
     });
-
-
-
-} */
+  }
 
 const uri = `mongodb+srv://${process.env.Name}:${process.env.Pass}@cluster0.sbqudjz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -74,7 +73,7 @@ async function run() {
 
 
         //post a new user
-        app.post('/addUser', async (req, res) => {
+        app.post('/addUser',verifyJWT, async (req, res) => {
             const name = req.body.name;
             const email = req.body.email;
             const result = await userCollection.insertOne({ name, email })
@@ -94,8 +93,8 @@ async function run() {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
-              $set: { role: 'admin' },
-            };
+                $set: { role: 'admin' }
+              };
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);
           })
@@ -203,9 +202,10 @@ async function run() {
 
         app.post('/schedule', async (req, res) => {
             const newSchedule = req.body;
+            const {email,dateFormat}=newSchedule
             const result = await meetingCollection.insertOne(newSchedule);
-
-            sendEmailSchdule(newSchedule)
+            console.log(email,dateFormat)
+      
             res.send(result);
         });
 
@@ -218,9 +218,12 @@ async function run() {
 
 
         app.get("/scheduleList", async (req, res) => {
-            const dateFormat = req.body
-            console.log(dateFormat)
-            const result = await meetingCollection.find({ dateFormat });
+            
+            const newSchedule = req.body;
+            const {email,dateFormat}=newSchedule
+          
+            const result = await meetingCollection.find({ date:dateFormat });
+            console.log(result)
             res.send(result);
 
 
@@ -228,40 +231,7 @@ async function run() {
 
         //send email
 
-        app.get('/email', async (req, res) => {
-            const nodemailer = require('nodemailer');
-            const mg = require('nodemailer-mailgun-transport');
 
-            // This is your API key that you retrieve from www.mailgun.com/cp (free up to 10K monthly emails)
-            const nodemailerMailgun = nodemailer.createTransport(mg(auth));
-            const auth = {
-                auth: {
-                    api_key: '465a957dfe39e78925b7aa04eb6436b8-835621cf-a32337bf',
-                    domain: 'sandbox10fed7c0860a443595f0f85e8bedfb8b.mailgun.org'
-                }
-            }
-
-         
-
-            nodemailerMailgun.sendMail({
-                from: 'myemail@example.com',
-                to: 'meherabhossain8260@gmail.com', // An array if you have multiple recipients.
-               
-                subject: 'Hey you, awesome!',
-                'replyTo': 'reply2this@company.com',
-                //You can use "html:" to send HTML email content. It's magic!
-                html: '<b>Wow Big powerful letters</b>',
-                //You can use "text:" to send plain-text content. It's oldschool!
-                text: 'Mailgun rocks, pow pow!'
-            }, (err, info) => {
-                if (err) {
-                    console.log(`Error: ${err}`);
-                }
-                else {
-                    console.log(`Response: ${info}`);
-                }
-            });
-        })
 
 
 

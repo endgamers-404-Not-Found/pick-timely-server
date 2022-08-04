@@ -7,6 +7,7 @@
     "mongodb": "^4.8.0",
     "nodemailer": "^6.7.7",
     "nodemailer-mailgun-transport": "^2.1.4",
+    "sendinblue-apiv3": "^2.0.2",
     "stripe": "^9.16.0"
   },
   "name": "pick-timely-server",

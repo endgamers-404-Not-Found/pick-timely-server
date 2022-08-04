@@ -45,6 +45,11 @@ async function run() {
             res.send(result)
         });
 
+        app.get("/allUser",async(req, res)=>{
+            const result = await userCollection.find().toArray();
+            res.send(result)
+        });
+
 
 
         // admin role api 
@@ -152,23 +157,50 @@ async function run() {
         res.send(result);
     });
 
-    app.get('/hoster/:id', async (req, res)=>{
-        const id = req.params.id;
-        const query = {_id:ObjectId(id)};
+    app.get('/hoster/:email', async (req, res)=>{
+        const email = req.params.email;
+        console.log(email);
+        const query = {email:email};
         const result = await hostCollection.findOne(query);
         res.send(result);
     });
 
-    app.get("/schedule", async(req, res)=>{
-      const result = await meetingCollection.find().toArray();
-      res.send(result)
+      app.get("/schedule", async(req, res)=>{
+        const result = await meetingCollection.find().toArray();
+        res.send(result)
+    });
+
+    app.put('/schedule/:id', async(req, res)=>{
+      const id = req.params.id;
+      const schedule = req.body;
+      const filtered = {_id: ObjectId(id)};
+      const options = {upsert:true};
+      const updatedDoc = {
+        $set:{
+          timeSlot:schedule.timeSlot,
+            name:schedule.name,
+            email:schedule.email,
+            description:schedule.description,
+            dateFormat:schedule.dateFormat,
+        }
+      };
+      const result = await meetingCollection.updateOne(filtered, updatedDoc, options);
+      res.send(result);
+    })
+
+    app.get("/schedule/:email", async(req, res)=>{
+      const email = req.params.email;
+      console.log(email);
+      const query = {email:email};
+      const result = await meetingCollection.findOne(query);
+      res.send(result);
   });
 
 
     app.post('/schedule', async (req, res)=>{
         const schedule = req.body;
         const result = await meetingCollection.insertOne(schedule);
-        sendScheduleMail(schedule)
+        // sendScheduleMail(schedule)
         res.send(result);
     });
 
@@ -179,39 +211,6 @@ async function run() {
       const result = await meetingCollection.deleteOne(query);
       res.send(result)
   });
-
-
-
-
-    app.get("/schedule/dateSchedule", async(req, res)=>{
-      const date = req.body;
-      const today = new Date();
-      console.log(first)
-      const query = {dateFormat:date.dateFormat};
-      const then = new Date(query);
-      const now = new Date();
- 
-
-      const myDate = Math.abs(then.getTime() - now.getTime());
-      console.log(myDate);
-
-      const finalHours = myDate / (60 * 60 * 1000);
-
-      console.log(finalHours);
-
-      if (finalHours > 24) {
-        const result = await meetingCollection.find().toArray();
-        res.send(result)
-      } else {
-        res.send('No schedule available within 24 hours');
-      }
-    
-      
-      
-  });
-
-
-
 
 
       // all of review api

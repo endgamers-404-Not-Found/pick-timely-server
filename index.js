@@ -146,7 +146,7 @@ async function run() {
       })
 
       //get Host data
-      app.get("/hoster",async(req, res)=>{
+      app.get("/hoster", async(req, res)=>{
         const result = await hostCollection.find().toArray();
         res.send(result)
     });
@@ -196,6 +196,14 @@ async function run() {
       res.send(result);
   });
 
+  app.get("/schedule/dateSchedule", async(req, res)=>{
+    const email = req.params.email;
+    console.log(email);
+    const query = {email:email};
+    const result = await meetingCollection.findOne(query);
+    res.send(result);
+});
+
 
     app.post('/schedule', async (req, res)=>{
         const schedule = req.body;
@@ -211,6 +219,8 @@ async function run() {
       const result = await meetingCollection.deleteOne(query);
       res.send(result)
   });
+
+
 
 
       // all of review api

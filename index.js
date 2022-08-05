@@ -6,7 +6,7 @@ require('dotenv').config();
 // const nodemailer = require('nodemailer');
 
 // const Sib=require('sib-api-v3-sdk')
-require('dotenv').config()
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
@@ -371,6 +371,6 @@ async function run() {
     })
 
 }
-
+ 
 run().catch(console.dir)
 

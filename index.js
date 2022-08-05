@@ -269,7 +269,11 @@ async function run() {
             res.send(result)
         })
 
-
+      app.get('/customers', async (req, res) => {
+        const query = {};
+        const result = await userCollection.find(query).toArray();
+        res.send(result);
+      })
 
     }
 

@@ -8,6 +8,7 @@
     "nodemailer": "^6.7.7",
     "nodemailer-mailgun-transport": "^2.1.4",
     "sendinblue-apiv3": "^2.0.2",
+    "sib-api-v3-sdk": "^8.4.0",
     "stripe": "^9.16.0"
   },
   "name": "pick-timely-server",

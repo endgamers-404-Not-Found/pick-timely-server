@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const SendinBlueApi = require('sendinblue-apiv3');
 const jwt = require('jsonwebtoken');
 const app = express();
+// const Sib=require('sib-api-v3-sdk')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
@@ -18,18 +18,37 @@ app.get('/', (req, res) => {
     res.send('server running')
 })
 
-const defaultClient = SendinBlueApi.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
+/* const emailClient = Sib.ApiClient.instance;
+const apiKey = emailClient.authentications['api-key'];
 apiKey.apiKey = process.env.SIB_API_KEY;
  
 
-const api = new SendinBlueApi.AccountApi()
-api.getAccount().then(function(data) {
+const api = new Sib.TransactionalEmailsApi()
+
+const sender={
+    email:"notfound404.picktimely@gmail.com",
+}
+const  reciver={
+    email:"meherab395@gmail.com"
+}
+api.sendTransacEmail({
+    sender,
+    to:reciver,
+    subject:'testing subjects',
+    textContent:`this testing purpose`
+
+}).then(console.log)
+
+.catch(console.log) */
+
+
+
+/* api.getAccount().then(function(data) {
   console.log('API called successfully. Returned data: ' + data);
 }, function(error) {
   console.error(error);
 });
- 
+  */
 
 
 

@@ -255,7 +255,7 @@ async function run() {
       const result = await meetingCollection.updateOne(filtered, updatedDoc, options);
       res.send(result);
     })
-
+ 
     app.get("/schedule/:email", async(req, res)=>{
       const email = req.params.email;
       console.log(email);

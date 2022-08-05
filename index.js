@@ -317,7 +317,7 @@ async function run() {
             const newSchedule = req.body;
             const {email,dateFormat}=newSchedule
           
-            const result = await meetingCollection.find({ date:dateFormat });
+            const result = await meetingCollection.find({ date:dateFormat }).toArray();
             console.log(result)
             res.send(result);
 

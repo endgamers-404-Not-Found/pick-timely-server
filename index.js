@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
+require('dotenv').config();
+// const nodemailer = require('nodemailer');
+
 // const Sib=require('sib-api-v3-sdk')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -11,12 +14,16 @@ const nodemailer = require('nodemailer');
 
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json());
+
+
+
 
 
 app.get('/', (req, res) => {
     res.send('server running')
 })
+
 
 /* const emailClient = Sib.ApiClient.instance;
 const apiKey = emailClient.authentications['api-key'];
@@ -85,11 +92,6 @@ async function run() {
         const reviewCollection = client.db("Pick-Timely").collection("userReviews")
 
 
-        // basic server
-        app.get('/', async (req, res) => {
-            res.send('server running')
-        })
-
 
         //post a new user
         app.post('/addUser',verifyJWT, async (req, res) => {
@@ -100,6 +102,11 @@ async function run() {
         })
 
         // load all user 
+        app.get("/allUser",async(req, res)=>{
+            const result = await userCollection.find().toArray();
+            res.send(result)
+        });
+
         app.get("/allUser",async(req, res)=>{
             const result = await userCollection.find().toArray();
             res.send(result)
@@ -200,6 +207,12 @@ async function run() {
             res.send(result)
         })
 
+
+      //get Host data
+      app.get("/hoster", async(req, res)=>{
+        const result = await hostCollection.find().toArray();
+        res.send(result)
+    });
         //get Host data
         app.get("/hoster", async (req, res) => {
             const result = await hostCollection.find().toArray();
@@ -211,6 +224,69 @@ async function run() {
             const result = await hostCollection.insertOne(newSchedule);
             res.send(result);
         });
+
+    app.get('/hoster/:email', async (req, res)=>{
+        const email = req.params.email;
+        console.log(email);
+        const query = {email:email};
+        const result = await hostCollection.findOne(query);
+        res.send(result);
+    });
+
+      app.get("/schedule", async(req, res)=>{
+        const result = await meetingCollection.find().toArray();
+        res.send(result)
+    });
+
+    app.put('/schedule/:id', async(req, res)=>{
+      const id = req.params.id;
+      const schedule = req.body;
+      const filtered = {_id: ObjectId(id)};
+      const options = {upsert:true};
+      const updatedDoc = {
+        $set:{
+          timeSlot:schedule.timeSlot,
+            name:schedule.name,
+            email:schedule.email,
+            description:schedule.description,
+            dateFormat:schedule.dateFormat,
+        }
+      };
+      const result = await meetingCollection.updateOne(filtered, updatedDoc, options);
+      res.send(result);
+    })
+
+    app.get("/schedule/:email", async(req, res)=>{
+      const email = req.params.email;
+      console.log(email);
+      const query = {email:email};
+      const result = await meetingCollection.findOne(query);
+      res.send(result);
+  });
+
+  app.get("/schedule/dateSchedule", async(req, res)=>{
+    const email = req.params.email;
+    console.log(email);
+    const query = {email:email};
+    const result = await meetingCollection.findOne(query);
+    res.send(result);
+});
+
+
+    app.post('/schedule', async (req, res)=>{
+        const schedule = req.body;
+        const result = await meetingCollection.insertOne(schedule);
+        // sendScheduleMail(schedule)
+        res.send(result);
+    });
+
+    
+    app.delete("/schedule/:id", async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id:ObjectId(id)};
+      const result = await meetingCollection.deleteOne(query);
+      res.send(result)
+  });
 
         app.get('/hoster/:id', async (req, res) => {
             const id = req.params.id;
@@ -248,7 +324,7 @@ async function run() {
 
         })
 
-        //send email
+        
 
 
 
@@ -282,6 +358,11 @@ async function run() {
     }
 
 
+        // basic server
+        app.get('/', async (req, res) => {
+          res.send('server running')
+      })
+
 
 
 
@@ -290,9 +371,6 @@ async function run() {
     })
 
 }
-
-
-
 
 run().catch(console.dir)
 

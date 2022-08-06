@@ -242,6 +242,26 @@ async function run() {
             res.send(result);
         });
 
+        //hoster update
+        app.put('/hoster/:id', async(req, res) =>{
+            const id = req.params.id;
+            const hoster = req.body;
+            const filtered = {_id:ObjectId(id)};
+            const options = {upsert:true};
+            const updatedDoc = {
+                $set:{
+                    hoster:hoster.hoster,
+                    email:hoster.email,
+                    duration:hoster.duration,
+                    eventType:hoster.eventType,
+                    description:hoster.description,
+                    image:hoster.image,
+                }
+            };
+            const result = await hostCollection.updateOne(filtered, updatedDoc, options);
+            res.send(result);
+        })
+
     app.get('/hoster/:email', async (req, res)=>{
         const email = req.params.email;
         console.log(email);

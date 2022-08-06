@@ -94,11 +94,17 @@ async function run() {
 
 
         //post a new user
-        app.post('/addUser',verifyJWT, async (req, res) => {
+        app.post('/addUser', async (req, res) => {
             const name = req.body.name;
             const email = req.body.email;
-            const result = await userCollection.insertOne({ name, email })
-            res.send(result)
+            const status=req.body?.status;
+            // console.log(status)
+            const query = await userCollection.findOne({email:email})
+            // console.log(query)
+            if(!query){
+              const result = await userCollection.insertOne(status ? { name, email,status }:{ name, email,statue:'free' })
+              res.send(result)
+            }
         })
 
         // load all user 
@@ -120,6 +126,17 @@ async function run() {
             const filter = { email: email };
             const updateDoc = {
                 $set: { role: 'admin' }
+              };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+          })
+
+        // remove from admin  
+        app.put('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: '' }
               };
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);

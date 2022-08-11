@@ -100,10 +100,10 @@ async function run() {
       const query = await userCollection.findOne({ email: email })
       // console.log(query)
       if (!query) {
-        const result = await userCollection.insertOne( { name, email, statue: 'free' })
-        res.send( result )
+        const result = await userCollection.insertOne({ name, email, statue: 'free' })
+        res.send(result)
       }
-      
+
     })
 
     // load all user 
@@ -229,15 +229,11 @@ async function run() {
       const result = await hostCollection.find().toArray();
       res.send(result)
     });
-    //get Host data
-    app.get("/hoster", async (req, res) => {
-      const result = await hostCollection.find().toArray();
-      res.send(result)
-    });
+    
 
     app.post('/hoster', async (req, res) => {
       const newSchedule = req.body;
-      const result = await hostCollection.insertOne(newSchedule);
+      const result = await hostCollection.inser/scheduletOne(newSchedule);
       res.send(result);
     });
 
@@ -245,9 +241,11 @@ async function run() {
       const email = req.params.email;
       console.log(email);
       const query = { email: email };
-      const result = await hostCollection.findOne(query);
+      const result = await hostCollection.find(query).toArray();
       res.send(result);
     });
+
+    
 
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();
@@ -366,6 +364,9 @@ async function run() {
       const result = await userCollection.find(query).toArray();
       res.send(result);
     })
+
+
+    
 
   }
 

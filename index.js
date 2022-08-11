@@ -239,7 +239,7 @@ async function run() {
 
     app.get('/hoster/:email', async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email };
       const result = await hostCollection.find(query).toArray();
       res.send(result);
@@ -272,7 +272,7 @@ async function run() {
 
     app.get("/schedule/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -280,7 +280,7 @@ async function run() {
 
     app.get("/schedule/dateSchedule", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -313,14 +313,14 @@ async function run() {
       const newSchedule = req.body;
       const { email, dateFormat } = newSchedule
       const result = await meetingCollection.insertOne(newSchedule);
-      console.log(email, dateFormat)
+      // console.log(email, dateFormat)
 
       res.send(result);
     });
 
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();
-      console.log(result)
+      // console.log(result)
       res.send(result)
     });
 
@@ -332,7 +332,7 @@ async function run() {
       const { email, dateFormat } = newSchedule
 
       const result = await meetingCollection.find({ date: dateFormat }).toArray();
-      console.log(result)
+      // console.log(result)
       res.send(result);
 
 

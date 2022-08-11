@@ -2,8 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-require('dotenv').config()
-
+require('dotenv').config();
 // const nodemailer = require('nodemailer');
 
 // const Sib=require('sib-api-v3-sdk')
@@ -113,8 +112,10 @@ async function run() {
       res.send(result)
     });
 
-   
-
+    app.get("/allUser", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result)
+    });
 
 
 
@@ -139,7 +140,6 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     })
-
 
     app.get('/admin/:email', async (req, res) => {
       const email = req.params.email;
@@ -233,7 +233,7 @@ async function run() {
 
     app.post('/hoster', async (req, res) => {
       const newSchedule = req.body;
-      const result = await hostCollection.inser/scheduletOne(newSchedule);
+      const result = await hostCollection.insertOne(newSchedule);
       res.send(result);
     });
 

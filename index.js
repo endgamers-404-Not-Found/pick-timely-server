@@ -246,7 +246,7 @@ async function run() {
         const email = req.params.email;
         console.log(email);
         const query = {email:email};
-        const result = await hostCollection.findOne(query);
+        const result = await hostCollection.find(query).toArray();
         res.send(result);
     });
 

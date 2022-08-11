@@ -239,7 +239,7 @@ async function run() {
 
     app.get('/hoster/:email', async (req, res) => {
       const email = req.params.email;
-      // console.log(email);
+      // console.log(email); 
       const query = { email: email };
       const result = await hostCollection.find(query).toArray();
       res.send(result);

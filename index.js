@@ -90,6 +90,7 @@ async function run() {
     const hostCollection = client.db("Pick-Timely").collection("hoster");
     const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
     const reviewCollection = client.db("Pick-Timely").collection("userReviews")
+    const blogsCollection = client.db("Pick-Timely").collection("blogs")
 
 
 
@@ -396,14 +397,14 @@ async function run() {
     //Post blogs. 
     app.post('/blog', async (req, res) => {
       const review = req.body;
-      const result = await blogCollection.insertOne(review);
+      const result = await blogsCollection.insertOne(review);
       res.send({ success: true, result });
     })
 
     //Get all post.
     app.get('/blog', async (req, res) => {
       const query = {};
-      const result = await blogCollection.find(query).toArray();
+      const result = await blogsCollection.find(query).toArray();
       res.send(result)
     })
 
@@ -458,4 +459,3 @@ async function run() {
 }
 
 run().catch(console.dir)
-

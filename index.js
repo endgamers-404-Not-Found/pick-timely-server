@@ -3,10 +3,10 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config()
+// const Sib = require('sib-api-v3-sdk')
 
 // const nodemailer = require('nodemailer');
 
-// const Sib=require('sib-api-v3-sdk')
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
@@ -25,43 +25,37 @@ app.get('/', (req, res) => {
     res.send('server running')
 })
 
+//sending email
 
-/* const emailClient = Sib.ApiClient.instance;
-const apiKey = emailClient.authentications['api-key'];
-apiKey.apiKey = process.env.SIB_API_KEY;
- 
+var SibApiV3Sdk = require('sib-api-v3-sdk');
 
-const api = new Sib.TransactionalEmailsApi()
+SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.SIB_API_KEY;
 
-const sender={
-    email:"notfound404.picktimely@gmail.com",
+ function sendEmail(newSchedule){
+    const {email}=newSchedule
+    // console.log(email)
+
+    new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail(
+        {
+          'subject':'Hello from the Node SDK!',
+          'sender' : {'email':'api@sendinblue.com', 'name':'Sendinblue'},
+          'to' : 'notfound404.picktimely@gmail.com',
+          'htmlContent' : `<html><body><h1>This is a transactional email {{params.bodyMessage}}</h1></body></html>`,
+          'params' : {'bodyMessage':'Made just for you!'}
+        }
+      ).then(function(data) {
+        console.log(data);
+      }, function(error) {
+        console.error(error);
+      });
 }
-const  reciver={
-    email:"meherab395@gmail.com"
-}
-api.sendTransacEmail({
-    sender,
-    to:reciver,
-    subject:'testing subjects',
-    textContent:`this testing purpose`
-
-}).then(console.log)
-
-.catch(console.log) */
-
-
-
-/* api.getAccount().then(function(data) {
-  console.log('API called successfully. Returned data: ' + data);
-}, function(error) {
-  console.error(error);
-});
-  */
 
 
 
 
 //use token
+
+
 
 function verifyJWT(req, res, next) {
 
@@ -244,7 +238,7 @@ async function run() {
 
     app.get('/hoster/:email', async (req, res)=>{
         const email = req.params.email;
-        console.log(email);
+       
         const query = {email:email};
         const result = await hostCollection.findOne(query);
         res.send(result);
@@ -275,7 +269,7 @@ async function run() {
  
     app.get("/schedule/:email", async(req, res)=>{
       const email = req.params.email;
-      console.log(email);
+     
       const query = {email:email};
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -283,20 +277,20 @@ async function run() {
 
   app.get("/schedule/dateSchedule", async(req, res)=>{
     const email = req.params.email;
-    console.log(email);
+   
     const query = {email:email};
     const result = await meetingCollection.findOne(query);
     res.send(result);
 });
 
 
-    app.post('/schedule', async (req, res)=>{
+/*     app.post('/schedule', async (req, res)=>{
         const schedule = req.body;
         const result = await meetingCollection.insertOne(schedule);
-        // sendScheduleMail(schedule)
+     
         res.send(result);
     });
-
+ */
     
     app.delete("/schedule/:id", async(req, res)=>{
       const id = req.params.id;
@@ -311,13 +305,20 @@ async function run() {
             const result = await hostCollection.findOne(query);
             res.send(result);
         });
+       
+    app.get("/hoster/:email", async(req, res)=>{
+        const email = req.params.email;
+  
+        const query = {email:email};
+        const result = await hostCollection.findOne(query);
+        res.send(result);
+    });
+  
 
         app.post('/schedule', async (req, res) => {
             const newSchedule = req.body;
-            const {email,dateFormat}=newSchedule
-            const result = await meetingCollection.insertOne(newSchedule);
-            console.log(email,dateFormat)
-      
+            const result = await meetingCollection.insertOne(newSchedule);        
+            sendEmail(newSchedule)
             res.send(result);
         });
 

@@ -91,6 +91,7 @@ async function run() {
     const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
     const reviewCollection = client.db("Pick-Timely").collection("userReviews")
     const blogsCollection = client.db("Pick-Timely").collection("blogs")
+    const developersCollection = client.db("Pick-Timely").collection("developersCollection")
 
 
 
@@ -124,6 +125,14 @@ async function run() {
       const result = await hostCollection.insertOne(newSchedule);
       res.send(result);
     });
+
+
+    app.get('/developers',async(req,res)=>{
+      const result= await developersCollection.find().toArray();
+      res.send(result)
+    })
+
+
 
     //hoster update
     app.put('/hoster/:id', async (req, res) => {
@@ -235,7 +244,7 @@ async function run() {
       res.send(result);
     });
 
-
+ 
 
     //get a package by id
     app.get('/package/:id', async (req, res) => {

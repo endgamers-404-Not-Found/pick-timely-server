@@ -163,7 +163,7 @@ async function run() {
       app.get("/schedule", async(req, res)=>{
         const result = await meetingCollection.find().toArray();
         res.send(result)
-
+      })
 
     app.get("/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -420,16 +420,7 @@ async function run() {
     })
 
 
-    
-
-  }
-
-  finally {
-    // client.close();
-  }
-
-
-  // basic server
+    // basic server
   app.get('/', async (req, res) => {
     res.send('server running')
   })
@@ -440,6 +431,17 @@ async function run() {
   app.listen(port, () => {
     console.log('server running on the port ', port);
   })
+
+
+
+
+      }
+
+
+
+finally {
+  // client.close();
+}
 
 }
 

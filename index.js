@@ -112,37 +112,37 @@ async function run() {
       res.send(result)
     });
 
-        //get Host data
-        app.get("/hoster", async (req, res) => {
-            const result = await hostCollection.find().toArray();
-            res.send(result)
-        });
+    //get Host data
+    app.get("/hoster", async (req, res) => {
+      const result = await hostCollection.find().toArray();
+      res.send(result)
+    });
 
-        app.post('/hoster', async (req, res) => {
-            const newSchedule = req.body;
-            const result = await hostCollection.insertOne(newSchedule);
-            res.send(result);
-        });
+    app.post('/hoster', async (req, res) => {
+      const newSchedule = req.body;
+      const result = await hostCollection.insertOne(newSchedule);
+      res.send(result);
+    });
 
-        //hoster update
-        app.put('/hoster/:id', async(req, res) =>{
-            const id = req.params.id;
-            const hoster = req.body;
-            const filtered = {_id:ObjectId(id)};
-            const options = {upsert:true};
-            const updatedDoc = {
-                $set:{
-                    hoster:hoster.hoster,
-                    email:hoster.email,
-                    duration:hoster.duration,
-                    eventType:hoster.eventType,
-                    description:hoster.description,
-                    image:hoster.image,
-                }
-            };
-            const result = await hostCollection.updateOne(filtered, updatedDoc, options);
-            res.send(result);
-        })
+    //hoster update
+    app.put('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      const hoster = req.body;
+      const filtered = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          hoster: hoster.hoster,
+          email: hoster.email,
+          duration: hoster.duration,
+          eventType: hoster.eventType,
+          description: hoster.description,
+          image: hoster.image,
+        }
+      };
+      const result = await hostCollection.updateOne(filtered, updatedDoc, options);
+      res.send(result);
+    })
 
     // app.get('/hoster/:email', async (req, res)=>{
     //     const email = req.params.email;
@@ -152,18 +152,18 @@ async function run() {
     //     res.send(result);
     // });
 
-    app.delete('/hoster/:id', async (req, res)=>{
+    app.delete('/hoster/:id', async (req, res) => {
       const id = req.params.id;
       console.log(id);
-      const query = {_id:ObjectId(id)};
+      const query = { _id: ObjectId(id) };
       const result = await hostCollection.deleteOne(query);
       res.send(result);
-  });
+    });
 
-      app.get("/schedule", async(req, res)=>{
-        const result = await meetingCollection.find().toArray();
-        res.send(result)
-      })
+    app.get("/schedule", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      res.send(result)
+    })
 
     app.get("/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -282,7 +282,7 @@ async function run() {
       const result = await hostCollection.find().toArray();
       res.send(result)
     });
-    
+
 
     app.post('/hoster', async (req, res) => {
       const newSchedule = req.body;
@@ -298,7 +298,7 @@ async function run() {
       res.send(result);
     });
 
-    
+
 
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();
@@ -393,7 +393,19 @@ async function run() {
     })
 
 
+    //Post blogs. 
+    app.post('/blog', async (req, res) => {
+      const review = req.body;
+      const result = await blogCollection.insertOne(review);
+      res.send({ success: true, result });
+    })
 
+    //Get all post.
+    app.get('/blog', async (req, res) => {
+      const query = {};
+      const result = await blogCollection.find(query).toArray();
+      res.send(result)
+    })
 
 
 
@@ -421,27 +433,27 @@ async function run() {
 
 
     // basic server
-  app.get('/', async (req, res) => {
-    res.send('server running')
-  })
+    app.get('/', async (req, res) => {
+      res.send('server running')
+    })
 
 
 
 
-  app.listen(port, () => {
-    console.log('server running on the port ', port);
-  })
+    app.listen(port, () => {
+      console.log('server running on the port ', port);
+    })
 
 
 
 
-      }
+  }
 
 
 
-finally {
-  // client.close();
-}
+  finally {
+    // client.close();
+  }
 
 }
 

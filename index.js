@@ -46,17 +46,20 @@ function sendAppointmentMail(newSchedule) {
     from: "notfound404.picktimely@gmail.com",
     to: email,
     subject: ` Your interview  ${description} for  on  at  is confirmed`,
-    text: `Your interview for  on  at is confirmed ${dateFormat}`,
+    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
     html: `
       <div> 
         <p>Hello, ${name},</p>
-        <h3>Your interview  for  is confirmed ${dateFormat}</h3>
-        <p>Looking forward to see you on at ${timeSlot} </p>
-        <p>Join this link  <a href="/">Meeting</a>  </p>
-        <h4 className="mt-10">Our Address</h4>
+        <h4>You are selected for online interview ${description}</h4>
+        <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+        <h4>Looking forward to see you on at ${timeSlot} </h4>
+        <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+        <p>Sincerely</p>
+        <p>Not Found  Pvt. Ltd. </p>
+        <h4 className="mt-5">Our Address</h4>
         <p>Not-found ,Dhaka</p>
-        <p>Bangladesh</p>
-        <a href="/">unsuscribed</a>
+        <p>Bangladesh</p>     
+     
       </div>
     `
   };

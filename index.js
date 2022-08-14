@@ -21,42 +21,55 @@ app.use(express.json());
 
 
 
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.Email,
+      pass: process.env.Epass
+    }
+  });
+  
+  function sendScheduleMail(schedule) {
+    const { timeSlot, name,email, description, dateFormat } = newSchedule;
+  
+    const mailOptons = {
+      from: "notfound404.picktimely@gmail.com",
+      to: email,
+      subject:  `Your interview  ${description} for  on  at  is confirmed`,
+      text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+      html: `
+        <div> 
+          <p>Hello, ${name},</p>
+          <h4>You are selected for online interview ${description}</h4>
+          <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+          <h4>Looking forward to see you on at ${timeSlot} </h4>
+          <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+          <p>Sincerely</p>
+          <p>Not Found  Pvt. Ltd. </p>
+          <h4 className="mt-5">Our Address</h4>
+          <p>Not-found ,Dhaka</p>
+          <p>Bangladesh</p>     
+       
+        </div>
+      `
+    };
+  
+    transporter.sendMail(mailOptons, function (err, data) {
+      if (err) {
+        console.log('something is wrong', err);
+      } else {
+        console.log('Email sent', data);
+      }
+    });
+  
+  }
+  
+
+
 app.get('/', (req, res) => {
     res.send('server running')
 })
 
-
-/* const emailClient = Sib.ApiClient.instance;
-const apiKey = emailClient.authentications['api-key'];
-apiKey.apiKey = process.env.SIB_API_KEY;
- 
-
-const api = new Sib.TransactionalEmailsApi()
-
-const sender={
-    email:"notfound404.picktimely@gmail.com",
-}
-const  reciver={
-    email:"meherab395@gmail.com"
-}
-api.sendTransacEmail({
-    sender,
-    to:reciver,
-    subject:'testing subjects',
-    textContent:`this testing purpose`
-
-}).then(console.log)
-
-.catch(console.log) */
-
-
-
-/* api.getAccount().then(function(data) {
-  console.log('API called successfully. Returned data: ' + data);
-}, function(error) {
-  console.error(error);
-});
-  */
 
 
 
@@ -124,7 +137,7 @@ async function run() {
             res.send(result)
         });
 
-        app.get("/allUser",async(req, res)=>{
+        app.get("/allUser/:email",async(req, res)=>{
             const result = await userCollection.find().toArray();
             res.send(result)
         });
@@ -225,20 +238,22 @@ async function run() {
         })
 
 
-      //get Host data
-      app.get("/hoster", async(req, res)=>{
+        //get Host data
+        app.get("/hoster", async(req, res)=>{
         const result = await hostCollection.find().toArray();
         res.send(result)
-    });
-        //get Host data
-        app.get("/hoster", async (req, res) => {
-            const result = await hostCollection.find().toArray();
-            res.send(result)
         });
 
         app.post('/hoster', async (req, res) => {
             const newSchedule = req.body;
             const result = await hostCollection.insertOne(newSchedule);
+            res.send(result);
+        });
+
+        app.get('/hoster/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await hostCollection.findOne(query);
             res.send(result);
         });
 
@@ -276,11 +291,26 @@ async function run() {
       const query = {_id:ObjectId(id)};
       const result = await hostCollection.deleteOne(query);
       res.send(result);
-  });
+    });
 
-      app.get("/schedule", async(req, res)=>{
+    app.get("/schedule", async(req, res)=>{
         const result = await meetingCollection.find().toArray();
         res.send(result)
+    });
+
+    app.get("/schedule/dateWise", async(req, res)=>{
+        const date = req.query.dateFormat;
+        const today = new Date();
+        const day = today.toLocaleDateString();
+        console.log(date);
+        if(date === day){
+            const query = parseInt({dateFormat:date});
+            const result = await meetingCollection.find(query).toArray();
+            return res.send(result);
+        } else{
+
+            return res.send('<h1>No schedule available</h1>');
+        } 
     });
 
     app.put('/schedule/:id', async(req, res)=>{
@@ -315,13 +345,13 @@ async function run() {
     const query = {email:email};
     const result = await meetingCollection.findOne(query);
     res.send(result);
-});
+    });
 
 
     app.post('/schedule', async (req, res)=>{
         const schedule = req.body;
         const result = await meetingCollection.insertOne(schedule);
-        // sendScheduleMail(schedule)
+        sendScheduleMail(schedule)
         res.send(result);
     });
 
@@ -333,41 +363,36 @@ async function run() {
       res.send(result)
   });
 
-        app.get('/hoster/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await hostCollection.findOne(query);
-            res.send(result);
-        });
+       
 
-        app.post('/schedule', async (req, res) => {
-            const newSchedule = req.body;
-            const {email,dateFormat}=newSchedule
-            const result = await meetingCollection.insertOne(newSchedule);
-            console.log(email,dateFormat)
-      
-            res.send(result);
-        });
+app.post('/schedule', async (req, res) => {
+    const newSchedule = req.body;
+    const {email,dateFormat}=newSchedule
+    const result = await meetingCollection.insertOne(newSchedule);
+    console.log(email,dateFormat)
 
-        app.get("/schedule", async (req, res) => {
-            const result = await meetingCollection.find().toArray();
-            console.log(result)
-            res.send(result)
-        });
+    res.send(result);
+});
+
+app.get("/schedule", async (req, res) => {
+    const result = await meetingCollection.find().toArray();
+    console.log(result)
+    res.send(result)
+});
 
 
 
-        app.get("/scheduleList", async (req, res) => {
-            
-            const newSchedule = req.body;
-            const {email,dateFormat}=newSchedule
-          
-            const result = await meetingCollection.find({ date:dateFormat }).toArray();
-            console.log(result)
-            res.send(result);
+app.get("/scheduleList", async (req, res) => {
+    
+    const newSchedule = req.body;
+    const {email,dateFormat}=newSchedule
+    
+    const result = await meetingCollection.find({ date:dateFormat }).toArray();
+    console.log(result)
+    res.send(result);
 
 
-        })
+})
 
         
 

@@ -2,11 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-require('dotenv').config()
-// const Sib = require('sib-api-v3-sdk')
-
+require('dotenv').config();
 // const nodemailer = require('nodemailer');
 
+// const Sib=require('sib-api-v3-sdk')
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
@@ -30,6 +29,7 @@ app.get('/', (req, res) => {
 
 
 
+//sending email
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -76,31 +76,9 @@ function sendAppointmentMail(newSchedule) {
 
 
 
-//sending email
 
-/* var SibApiV3Sdk = require('sib-api-v3-sdk');
-const { parse } = require('dotenv');
 
-SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.SIB_API_KEY;
 
- function sendEmail(newSchedule){
-    const {email}=newSchedule
-   
-
-    new SibApiV3Sdk.TransactionalEmailsApi().sendTransacEmail(
-        {
-          'subject':'Hello from the Node SDK!',
-          'sender' : {'email':'api@sendinblue.com', 'name':'Sendinblue'},
-          'to' :{ email:email},
-          'htmlContent' : `<html><body><h1>This is a transactional email {{params.bodyMessage}}</h1></body></html>`,
-          'params' : {'bodyMessage':'Made just for you!'}
-        }
-      ).then(function(data) {
-        console.log(data);
-      }, function(error) {
-        console.error(error);
-      });
-}
 
 
 
@@ -108,12 +86,15 @@ SibApiV3Sdk.ApiClient.instance.authentications['api-key'].apiKey = process.env.S
 //use token
 
 
- */
 function verifyJWT(req, res, next) {
 
   const authHeader = req.headers.authorization;
   if (!authHeader) {
+
     return res.status(401).send({ message: 'Unauthorization access' })
+
+    return res.status(401).send({ message: 'Unauthorized access' })
+
   }
   const token = authHeader.split(' ')[1]
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
@@ -141,6 +122,7 @@ async function run() {
 
 
 
+
     //post a new user
     app.post('/addUser', verifyJWT, async (req, res) => {
       const name = req.body.name;
@@ -164,16 +146,106 @@ async function run() {
     })
 
 
+
+    const blogsCollection = client.db("Pick-Timely").collection("blogs")
+    const developersCollection = client.db("Pick-Timely").collection("developersCollection")
+
+
+
+    //post a new user
+    app.post('/addUser', async (req, res) => {
+      const name = req.body.name;
+      const email = req.body.email;
+      const query = await userCollection.findOne({ email: email })
+      // console.log(query)
+      if (!query) {
+        const result = await userCollection.insertOne({ name, email, statue: 'free' })
+        res.send(result)
+      }
+
+    })
+
+    app.get('/hoster/:email', async (req, res)=>{
+        const email = req.params.email;
+        console.log(email);
+        const query = {email:email};
+        const result = await hostCollection.find(query).toArray();
+        res.send(result);
+    })
+
+
     // load all user 
     app.get("/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result)
     });
 
+
     app.get("/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result)
     });
+
+
+    //get Host data
+    app.get("/hoster", async (req, res) => {
+      const result = await hostCollection.find().toArray();
+      res.send(result)
+    });
+
+    app.post('/hoster', async (req, res) => {
+      const newSchedule = req.body;
+      const result = await hostCollection.insertOne(newSchedule);
+      res.send(result);
+    });
+
+
+    app.get('/developers',async(req,res)=>{
+      const result= await developersCollection.find().toArray();
+      res.send(result)
+    })
+
+
+
+    //hoster update
+    app.put('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      const hoster = req.body;
+      const filtered = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          hoster: hoster.hoster,
+          email: hoster.email,
+          duration: hoster.duration,
+          eventType: hoster.eventType,
+          description: hoster.description,
+          image: hoster.image,
+        }
+      };
+      const result = await hostCollection.updateOne(filtered, updatedDoc, options);
+      res.send(result);
+    })
+
+ 
+    app.delete('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await hostCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/schedule", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.get("/allUser", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result)
+    });
+
 
 
 
@@ -187,6 +259,19 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     })
+
+
+    // remove from admin  
+    app.put('/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: { role: '' }
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
 
     app.get('/admin/:email', async (req, res) => {
       const email = req.params.email;
@@ -276,11 +361,15 @@ async function run() {
       const result = await hostCollection.find().toArray();
       res.send(result)
     });
+
     //get Host data
     app.get("/hoster", async (req, res) => {
       const result = await hostCollection.find().toArray();
       res.send(result)
     });
+
+
+
 
     app.post('/hoster', async (req, res) => {
       const newSchedule = req.body;
@@ -291,6 +380,7 @@ async function run() {
     app.get('/hoster/:email', async (req, res) => {
       const email = req.params.email;
 
+
       const query = { email: email };
       const result = await hostCollection.findOne(query);
       res.send(result);
@@ -299,6 +389,18 @@ async function run() {
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();
       res.send(result)
+
+      // console.log(email); 
+      const query = { email: email };
+      res.send(result);
+    });
+
+
+
+    app.get("/schedule", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      res.send(result)
+
     });
 
     app.put('/schedule/:id', async (req, res) => {
@@ -330,26 +432,54 @@ async function run() {
     app.get("/schedule/dateSchedule", async (req, res) => {
       const email = req.params.email;
 
+
+      // console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
     });
 
 
-    /*     app.post('/schedule', async (req, res)=>{
-            const schedule = req.body;
-            const result = await meetingCollection.insertOne(schedule);
-         
-            res.send(result);
-        });
-     */
+
+    app.post('/schedule', async (req, res) => {
+      const schedule = req.body;
+      const result = await meetingCollection.insertOne(schedule);
+      // sendScheduleMail(schedule)
+      res.send(result);
+    });
+
 
     app.delete("/schedule/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await meetingCollection.deleteOne(query);
       res.send(result)
+
     });
+
+    app.get('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await hostCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post('/schedule', async (req, res) => {
+      const newSchedule = req.body;
+      const { email, dateFormat } = newSchedule
+      const result = await meetingCollection.insertOne(newSchedule);
+      // console.log(email, dateFormat)
+
+      res.send(result);
+    });
+
+    app.get("/schedule", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      // console.log(result)
+      res.send(result)
+
+    });
+
 
     app.get('/hoster/:id', async (req, res) => {
       const id = req.params.id;
@@ -440,7 +570,84 @@ async function run() {
     console.log('server running on the port ', port);
   })
 
-}
 
-run().catch(console.dir)
+
+
+
+
+    app.get("/scheduleList", async (req, res) => {
+
+      const newSchedule = req.body;
+      const { email, dateFormat } = newSchedule
+
+      const result = await meetingCollection.find({ date: dateFormat }).toArray();
+      // console.log(result)
+      res.send(result);
+
+
+    })
+
+
+    //Post blogs. 
+    app.post('/blog', async (req, res) => {
+      const review = req.body;
+      const result = await blogsCollection.insertOne(review);
+      res.send({ success: true, result });
+    })
+
+    //Get all post.
+    app.get('/blog', async (req, res) => {
+      const query = {};
+      const result = await blogsCollection.find(query).toArray();
+      res.send(result)
+    })
+
+
+
+
+
+    // all of review api
+    // post api for review
+    app.post('/review', async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    })
+
+    app.get('/review', async (req, res) => {
+      const query = {};
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result)
+    })
+
+    app.get('/customers', async (req, res) => {
+      const query = {};
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+    // basic server
+    app.get('/', async (req, res) => {
+      res.send('server running')
+    })
+
+
+
+
+    app.listen(port, () => {
+      console.log('server running on the port ', port);
+    })
+
+
+
+
+  
+  
+  }
+  run().catch(console.dir)
+
+
+  
+
 

@@ -30,7 +30,7 @@ const transporter = nodemailer.createTransport({
   });
   
   function sendScheduleMail(schedule) {
-    const { timeSlot, name,email, description, dateFormat } = newSchedule;
+    const { timeSlot, name,email, description, dateFormat } = schedule;
   
     const mailOptons = {
       from: "notfound404.picktimely@gmail.com",

@@ -18,12 +18,54 @@ app.use(cors())
 app.use(express.json());
 
 
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.Email,
+      pass: process.env.Epass
+    }
+  });
+  
+  function sendScheduleMail(schedule) {
+    const { timeSlot, name,email, description, dateFormat } = schedule;
+  
+    const mailOptons = {
+      from: "notfound404.picktimely@gmail.com",
+      to: email,
+      subject:  `Your interview  ${description} for  on  at  is confirmed`,
+      text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+      html: `
+        <div> 
+          <p>Hello, ${name},</p>
+          <h4>You are selected for online interview ${description}</h4>
+          <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+          <h4>Looking forward to see you on at ${timeSlot} </h4>
+          <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+          <p>Sincerely</p>
+          <p>Not Found  Pvt. Ltd. </p>
+          <h4 className="mt-5">Our Address</h4>
+          <p>Not-found ,Dhaka</p>
+          <p>Bangladesh</p>     
+       
+        </div>
+      `
+    };
+  
+    transporter.sendMail(mailOptons, function (err, data) {
+      if (err) {
+        console.log('something is wrong', err);
+      } else {
+        console.log('Email sent', data);
+      }
+    });
+  
+  }
+
+
 
 app.get('/', (req, res) => {
     res.send('server running')
 })
-
-
 
 
 

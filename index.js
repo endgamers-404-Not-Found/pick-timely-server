@@ -25,38 +25,48 @@ app.get('/', (req, res) => {
 })
 
 
-/* const emailClient = Sib.ApiClient.instance;
-const apiKey = emailClient.authentications['api-key'];
-apiKey.apiKey = process.env.SIB_API_KEY;
- 
-
-const api = new Sib.TransactionalEmailsApi()
-
-const sender={
-    email:"notfound404.picktimely@gmail.com",
-}
-const  reciver={
-    email:"meherab395@gmail.com"
-}
-api.sendTransacEmail({
-    sender,
-    to:reciver,
-    subject:'testing subjects',
-    textContent:`this testing purpose`
-
-}).then(console.log)
-
-.catch(console.log) */
-
-
-
-/* api.getAccount().then(function(data) {
-  console.log('API called successfully. Returned data: ' + data);
-}, function(error) {
-  console.error(error);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: "notfound404.picktimely@gmail.com",
+    pass: "uzunpmoxinphglaz"
+  }
 });
-  */
 
+function sendScheduleMail(schedule) {
+  const { timeSlot, name,email, description, dateFormat } = schedule;
+
+  const mailOptons = {
+    from: "notfound404.picktimely@gmail.com",
+    to: email,
+    subject:  `Your interview  ${description} for  on  at  is confirmed`,
+    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+    html: `
+      <div> 
+        <p>Hello, ${name},</p>
+        <h4>You are selected for online interview ${description}</h4>
+        <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+        <h4>Looking forward to see you on at ${timeSlot} </h4>
+        <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+        <p>Sincerely</p>
+        <p>Not Found  Pvt. Ltd. </p>
+        <h4 className="mt-5">Our Address</h4>
+        <p>Not-found ,Dhaka</p>
+        <p>Bangladesh</p>     
+     
+      </div>
+    `
+  };
+
+  transporter.sendMail(mailOptons, function (err, data) {
+    if (err) {
+      console.log('something is wrong', err);
+    } else {
+      // console.log('Email sent', data);
+    }
+  });
+
+}
 
 
 
@@ -80,6 +90,8 @@ function verifyJWT(req, res, next) {
 
 const uri = `mongodb+srv://${process.env.Name}:${process.env.Pass}@cluster0.sbqudjz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+
 
 async function run() {
   try {
@@ -162,13 +174,7 @@ async function run() {
       res.send(result);
     })
 
-    // app.get('/hoster/:email', async (req, res)=>{
-    //     const email = req.params.email;
-    //     console.log(email);
-    //     const query = {email:email};
-    //     const result = await hostCollection.findOne(query);
-    //     res.send(result);
-    // });
+  
 
     app.delete('/hoster/:id', async (req, res) => {
       const id = req.params.id;
@@ -362,7 +368,7 @@ async function run() {
     app.post('/schedule', async (req, res) => {
       const schedule = req.body;
       const result = await meetingCollection.insertOne(schedule);
-      // sendScheduleMail(schedule)
+      sendScheduleMail(schedule)
       res.send(result);
     });
 
@@ -381,14 +387,11 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/schedule', async (req, res) => {
-      const newSchedule = req.body;
-      const { email, dateFormat } = newSchedule
-      const result = await meetingCollection.insertOne(newSchedule);
-      // console.log(email, dateFormat)
-
-      res.send(result);
-    });
+    // app.post('/schedule', async (req, res) => {
+    //   const newSchedule = req.body;
+    //   const result = await meetingCollection.insertOne(newSchedule);
+    //   res.send(result);
+    // });
 
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();
@@ -476,3 +479,7 @@ async function run() {
 }
 
 run().catch(console.dir)
+
+
+
+

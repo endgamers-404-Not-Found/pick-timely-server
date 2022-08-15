@@ -34,7 +34,7 @@ const transporter = nodemailer.createTransport({
 });
 
 function sendScheduleMail(schedule) {
-  const { timeSlot, name,email, description, dateFormat } = schedule;
+  const { timeSlot, name,email, description,linking, dateFormat } = schedule;
 
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
@@ -47,7 +47,7 @@ function sendScheduleMail(schedule) {
         <h4>You are selected for online interview ${description}</h4>
         <h4>Your interview  for  is confirmed ${dateFormat}</h4>
         <h4>Looking forward to see you on at ${timeSlot} </h4>
-        <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+        <p>Join this link  <a href=${linking}>Meeting</a>  </p>
         <p>Sincerely</p>
         <p>Not Found  Pvt. Ltd. </p>
         <h4 className="mt-5">Our Address</h4>

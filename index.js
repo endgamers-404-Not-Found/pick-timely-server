@@ -34,12 +34,14 @@ const transporter = nodemailer.createTransport({
 });
 
 function sendScheduleMail(schedule) {
-  const { timeSlot, name,email, description,linking, dateFormat } = schedule;
+  const { timeSlot, name, email, description, linking, dateFormat } = schedule;
+  const e = email.map(email=>email.email)
+  // console.log('api hit',e)
 
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
-    to: email,
-    subject:  `Your interview  ${description} for  on  at  is confirmed`,
+    to: e,
+    subject: `Your interview  ${description} for  on  at  is confirmed`,
     text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
     html: `
       <div> 
@@ -120,13 +122,23 @@ async function run() {
 
     })
 
-    app.get('/hoster/:email', async (req, res)=>{
-        const email = req.params.email;
-        console.log(email);
-        const query = {email:email};
-        const result = await hostCollection.find(query).toArray();
-        res.send(result);
+    app.get('/hoster/:email', async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      const query = { email: email };
+      const result = await hostCollection.find(query).toArray();
+      res.send(result);
     })
+
+
+   //get an specific host for arrange meeting
+   app.get('/arrangeMeeting/:hostId',async(req,res)=>{
+    const id= req.params.hostId;
+    const query = {_id:ObjectId(id)}
+    const result = await hostCollection.findOne(query);
+    res.send(result)
+   })
+
 
     // load all user 
     app.get("/allUser", async (req, res) => {
@@ -147,8 +159,8 @@ async function run() {
     });
 
 
-    app.get('/developers',async(req,res)=>{
-      const result= await developersCollection.find().toArray();
+    app.get('/developers', async (req, res) => {
+      const result = await developersCollection.find().toArray();
       res.send(result)
     })
 
@@ -174,11 +186,11 @@ async function run() {
       res.send(result);
     })
 
-  
+
 
     app.delete('/hoster/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const query = { _id: ObjectId(id) };
       const result = await hostCollection.deleteOne(query);
       res.send(result);
@@ -258,7 +270,7 @@ async function run() {
       res.send(result);
     });
 
- 
+
 
     //get a package by id
     app.get('/package/:id', async (req, res) => {
@@ -314,13 +326,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/hoster/:email', async (req, res) => {
-      const email = req.params.email;
-      // console.log(email); 
-      const query = { email: email };
-      const result = await hostCollection.find(query).toArray();
-      res.send(result);
-    });
+    
 
 
 
@@ -380,25 +386,16 @@ async function run() {
       res.send(result)
     });
 
-    app.get('/hoster/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const result = await hostCollection.findOne(query);
-      res.send(result);
-    });
+    
 
-    // app.post('/schedule', async (req, res) => {
-    //   const newSchedule = req.body;
-    //   const result = await meetingCollection.insertOne(newSchedule);
-    //   res.send(result);
-    // });
+    
 
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();
       // console.log(result)
       res.send(result)
     });
-  
+
 
 
     app.get("/scheduleList", async (req, res) => {
@@ -449,6 +446,13 @@ async function run() {
     app.get('/customers', async (req, res) => {
       const query = {};
       const result = await userCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.get('/mySchedules/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { host: email }
+      const result = await meetingCollection.find(filter).toArray();
       res.send(result);
     })
 

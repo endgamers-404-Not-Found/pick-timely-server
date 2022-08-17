@@ -35,7 +35,7 @@ const transporter = nodemailer.createTransport({
 
 function sendScheduleMail(schedule) {
   const { timeSlot, name, email, description, linking, dateFormat } = schedule;
-  const e = email.map(email=>email.email)
+  const e = email.map(email => email.email)
   // console.log('api hit',e)
 
   const mailOptons = {
@@ -131,13 +131,13 @@ async function run() {
     })
 
 
-   //get an specific host for arrange meeting
-   app.get('/arrangeMeeting/:hostId',async(req,res)=>{
-    const id= req.params.hostId;
-    const query = {_id:ObjectId(id)}
-    const result = await hostCollection.findOne(query);
-    res.send(result)
-   })
+    //get an specific host for arrange meeting
+    app.get('/arrangeMeeting/:hostId', async (req, res) => {
+      const id = req.params.hostId;
+      const query = { _id: ObjectId(id) }
+      const result = await hostCollection.findOne(query);
+      res.send(result)
+    })
 
 
     // load all user 
@@ -326,7 +326,7 @@ async function run() {
       res.send(result);
     });
 
-    
+
 
 
 
@@ -343,11 +343,13 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
+          host: schedule.host,
+          type: schedule.type,
           timeSlot: schedule.timeSlot,
-          name: schedule.name,
           email: schedule.email,
           description: schedule.description,
           dateFormat: schedule.dateFormat,
+          linking: schedule.linking
         }
       };
       const result = await meetingCollection.updateOne(filtered, updatedDoc, options);
@@ -386,9 +388,9 @@ async function run() {
       res.send(result)
     });
 
-    
 
-    
+
+
 
     app.get("/schedule", async (req, res) => {
       const result = await meetingCollection.find().toArray();

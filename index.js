@@ -3,14 +3,14 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config();
-// const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer');
 
-// const Sib=require('sib-api-v3-sdk')
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
+
 
 
 app.use(cors())
@@ -25,37 +25,8 @@ app.get('/', (req, res) => {
 })
 
 
-/* const emailClient = Sib.ApiClient.instance;
-const apiKey = emailClient.authentications['api-key'];
-apiKey.apiKey = process.env.SIB_API_KEY;
  
 
-const api = new Sib.TransactionalEmailsApi()
-
-const sender={
-    email:"notfound404.picktimely@gmail.com",
-}
-const  reciver={
-    email:"meherab395@gmail.com"
-}
-api.sendTransacEmail({
-    sender,
-    to:reciver,
-    subject:'testing subjects',
-    textContent:`this testing purpose`
-
-}).then(console.log)
-
-.catch(console.log) */
-
-
-
-/* api.getAccount().then(function(data) {
-  console.log('API called successfully. Returned data: ' + data);
-}, function(error) {
-  console.error(error);
-});
-  */
 
 
 

@@ -30,7 +30,7 @@ const transporter = nodemailer.createTransport({
   });
   
   function sendScheduleMail(schedule) {
-    const { timeSlot, name,email, description, dateFormat } = schedule;
+    const { timeSlot, name,email, description, dateFormat, linking } = schedule;
   
     const mailOptons = {
       from: "notfound404.picktimely@gmail.com",
@@ -43,7 +43,7 @@ const transporter = nodemailer.createTransport({
           <h4>You are selected for online interview ${description}</h4>
           <h4>Your interview  for  is confirmed ${dateFormat}</h4>
           <h4>Looking forward to see you on at ${timeSlot} </h4>
-          <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+          <p>Join this link  <a href=${linking}>Meeting</a>  </p>
           <p>Sincerely</p>
           <p>Not Found  Pvt. Ltd. </p>
           <h4 className="mt-5">Our Address</h4>
@@ -104,6 +104,8 @@ async function run() {
         const hostCollection = client.db("Pick-Timely").collection("hoster");
         const meetingCollection = client.db("Pick-Timely").collection("meetingSchedule");
         const reviewCollection = client.db("Pick-Timely").collection("userReviews")
+        const recruitmentsCollection = client.db("Pick-Timely").collection("recruitments")
+        const easyScheduleCollection = client.db("Pick-Timely").collection("easySchedule")
 
 
 
@@ -419,7 +421,31 @@ app.get("/scheduleList", async (req, res) => {
         const query = {};
         const result = await userCollection.find(query).toArray();
         res.send(result);
-      })
+      });
+
+      app.get('/recruitments', async(req, res)=>{
+        const result = await recruitmentsCollection.find().toArray();
+        res.send(result);
+      });
+
+      app.get('/recruitments/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id:ObjectId(id)};
+        const result = await recruitmentsCollection.findOne(query);
+        res.send(result);
+      });
+
+      app.get('/easySchedule', async(req, res)=>{
+        const result = await easyScheduleCollection.find().toArray();
+        res.send(result);
+      });
+
+      app.get('/easySchedule/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id:ObjectId(id)};
+        const result = await easyScheduleCollection.findOne(query);
+        res.send(result);
+      });
 
     }
 
@@ -445,20 +471,4 @@ app.get("/scheduleList", async (req, res) => {
 run().catch(console.dir)
 
 
-
-
-function printNumbers(from, to) {
-  let current = from;
-
-  setTimeout(function go() {
-    console.log(current);
-    if (current < to) {
-      setTimeout(go, 1000);
-    }
-    current++;
-  }, 1000);
-}
-
-// usage:
-printNumbers(5, 10);
 

@@ -425,7 +425,7 @@ async function run() {
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
       const diff=differenceOfTime(schedule.timeSlot);
-      if(diff===1){
+        if(await diff===1){
 
         setTimeout(remainder,1000,schedule)
       }

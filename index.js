@@ -31,6 +31,15 @@ console.log(time
 
 
 
+const differenceOfTime=(previousTime)=>{
+    const currentTime=(parseInt(time.slice(0,2))*60)+parseInt(time.slice(3,5));
+    const previousTime1=(parseInt(previousTime.slice(0,2))*60)+parseInt(previousTime.slice(3,5));
+    return previousTime1-currentTime;
+}
+// console.log(differenceOfTime("20:20"));
+
+
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -51,7 +60,8 @@ const transporter1 = nodemailer.createTransport({
 
 function sendScheduleMail(schedule) {
   const { timeSlot, name, email, description, dateFormat } = schedule;
-  const e = email.map(email => email.email)
+  const e = email.map(email => email.email);
+  
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
     to: e,
@@ -89,38 +99,37 @@ function sendScheduleMail(schedule) {
 function remainderSchedule(schedule) {
   console.log("hello from remainder");
   const { timeSlot, name, email, description, dateFormat } = schedule;
-  console.log(timeSlot,dateFormat);
+  
   const e = email.map(email => email.email)
-  console.log(email);
-  const mailOptons = {
-    from: "notfound404.picktimely@gmail.com",
-    to: e,
-    subject: `Remainder interview  ${description} for  on  at  is confirmed`,
-    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
-    html: `
-        <div> 
-          <p>Hello, ${name},</p>
-          <h4>You are not selected for online interview ${description}</h4>
-          <h4>Your interview  for  is confirmed ${dateFormat}</h4>
-          <h4>Looking forward to see you on at ${timeSlot} </h4>
-          <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
-          <p>Sincerely</p>
-          <p>Not Found  Pvt. Ltd. </p>
-          <h4 className="mt-5">Our Address</h4>
-          <p>Not-found ,Dhaka</p>
-          <p>Bangladesh</p>     
-       
-        </div>
-      `
-  };
-  transporter1.sendMail(mailOptons, function (err, data) {
-    if (err) {
-      console.log('something is wrong', err);
-    } else {
-      console.log('Email sent', data);
-    }
-  })
-
+    const mailOptons = {
+      from: "notfound404.picktimely@gmail.com",
+      to: e,
+      subject: `Remainder interview  ${description} for  on  at  is confirmed`,
+      text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+      html: `
+          <div> 
+            <p>Hello, ${name},</p>
+            <h4>You are not selected for online interview ${description}</h4>
+            <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+            <h4>Looking forward to see you on at ${timeSlot} </h4>
+            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+            <p>Sincerely</p>
+            <p>Not Found  Pvt. Ltd. </p>
+            <h4 className="mt-5">Our Address</h4>
+            <p>Not-found ,Dhaka</p>
+            <p>Bangladesh</p>     
+         
+          </div>
+        `
+    };
+    transporter1.sendMail(mailOptons, function (err, data) {
+      if (err) {
+        console.log('something is wrong', err);
+      } else {
+        console.log('Email sent', data);
+      }
+    })
+  
 
 }
 function remainder(schedule){
@@ -415,7 +424,11 @@ async function run() {
       const schedule = req.body;
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
-      setTimeout(remainder,8000,schedule)
+      const diff=differenceOfTime(schedule.timeSlot);
+      if(diff===1){
+
+        setTimeout(remainder,1000,schedule)
+      }
       // remainder()
       res.send(result);
     });

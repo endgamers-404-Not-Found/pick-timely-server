@@ -100,7 +100,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 async function run() {
-  try {
+  try { 
 
     await client.connect();
     const userCollection = client.db("Pick-Timely").collection("userCollection");

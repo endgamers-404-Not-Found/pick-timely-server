@@ -110,6 +110,8 @@ async function run() {
     const reviewCollection = client.db("Pick-Timely").collection("userReviews")
     const recruitmentsCollection = client.db("Pick-Timely").collection("recruitments")
     const easyScheduleCollection = client.db("Pick-Timely").collection("easySchedule")
+    const blogsCollection = client.db("Pick-Timely").collection("blogs")
+    const developersCollection = client.db("Pick-Timely").collection("developersCollection")
 
 
 
@@ -170,7 +172,14 @@ async function run() {
 
 
 
-
+    //get an specific host for arrange meeting
+    app.get('/arrangeMeeting/:hostId', async (req, res) => {
+      const id = req.params.hostId;
+      console.log(id)
+      const query = { _id: ObjectId(id) }
+      const result = await hostCollection.findOne(query);
+      res.send(result)
+    })
 
 
     //get all packages
@@ -256,50 +265,23 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/hoster/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const result = await hostCollection.findOne(query);
-      res.send(result);
-    });
-
-    //hoster update
-    app.put('/hoster/:id', async (req, res) => {
-      const id = req.params.id;
-      const hoster = req.body;
-      const filtered = { _id: ObjectId(id) };
-      const options = { upsert: true };
-      const updatedDoc = {
-        $set: {
-          hoster: hoster.hoster,
-          email: hoster.email,
-          duration: hoster.duration,
-          eventType: hoster.eventType,
-          description: hoster.description,
-          image: hoster.image,
-        }
-      };
-      const result = await hostCollection.updateOne(filtered, updatedDoc, options);
-      res.send(result);
-    })
-
-    app.get('/hoster/:email', async (req, res) => {
+  
+    
+    
+    app.get('/hoster/:email',async(req,res)=>{
       const email = req.params.email;
-      // console.log(email);
-      const query = { email: email };
-      const result = await hostCollection.find(query).toArray();
-      res.send(result);
-    })
-
-
-
-    //get an specific host for arrange meeting
-    app.get('/arrangeMeeting/:hostId', async (req, res) => {
-      const id = req.params.hostId;
-      const query = { _id: ObjectId(id) }
-      const result = await hostCollection.findOne(query);
+      const query = {email:email}
+      const result = await hostCollection.find(query).toArray()
       res.send(result)
     })
+
+     //Get all post.
+     app.get('/blog', async (req, res) => {
+      const query = {};
+      const result = await blogsCollection.find(query).toArray();
+      res.send(result)
+    })
+
 
 
     // load all user 
@@ -388,6 +370,7 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc, options);
       res.send({ success: true, result });
     });
+
 
     //get profile data.
     app.get('/profile/:email', async (req, res) => {
@@ -579,18 +562,23 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get('/mySchedules/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { host: email }
+      const result = await meetingCollection.find(filter).toArray();
+      res.send(result);
+    })
+
+
+
   }
 
   finally {
     // client.close();
   }
 
-  app.get('/mySchedules/:email', async (req, res) => {
-    const email = req.params.email;
-    const filter = { host: email }
-    const result = await meetingCollection.find(filter).toArray();
-    res.send(result);
-  })
+
 
 
   // basic server

@@ -4,12 +4,13 @@ const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config();
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+
 
 // const nodemailer = require('nodemailer');
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { response } = require('express');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 // const nodemailer = require('nodemailer');
@@ -21,6 +22,16 @@ app.use(express.json());
 
 
 
+
+
+
+
+const differenceOfTime=(previousTime)=>{
+    const currentTime=(parseInt(time.slice(0,2))*60)+parseInt(time.slice(3,5));
+    const previousTime1=(parseInt(previousTime.slice(0,2))*60)+parseInt(previousTime.slice(3,5));
+    return previousTime1-currentTime;
+}
+// console.log(diffesrenceOfTime("19:50"));
 
 
 
@@ -45,7 +56,8 @@ const transporter1 = nodemailer.createTransport({
 
 function sendScheduleMail(schedule) {
   const { timeSlot, name, email, description, dateFormat } = schedule;
-  const e = email.map(email => email.email)
+  const e = email.map(email => email.email);
+  
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
     to: e,
@@ -86,14 +98,24 @@ const today = new Date();
 const date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ today.getFullYear();
 const time = today.getHours() + ":" + today.getMinutes();
 console.log(date);
-console.log(time
-);
+console.log(time);
+
+const request = require('request');
+request('https://pick-timely.herokuapp.com/schedule', function (error, response, body) {
+  console.error('error:', error); // Print the error if one occurred
+  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+ // Print the HTML for the Google homepage.
+// console.log(body) 
+
+}) 
 
 
-function differentMin( minutes) {
-  return time - minutes * 60000;
-}
-console.log(differentMin)
+
+
+
+
+
+
 
 
 function remainderSchedule(schedule) {
@@ -102,42 +124,45 @@ function remainderSchedule(schedule) {
 
   
   console.log(timeSlot,dateFormat);
+
   const e = email.map(email => email.email)
-  console.log(email);
-  const mailOptons = {
-    from: "notfound404.picktimely@gmail.com",
-    to: e,
-    subject: `Remainder interview  ${description} for  on  at  is confirmed`,
-    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
-    html: `
-        <div> 
-          <p>Hello, ${name},</p>
-          <h4>You are not selected for online interview ${description}</h4>
-          <h4>Your interview  for  is confirmed ${dateFormat}</h4>
-          <h4>Looking forward to see you on at ${timeSlot} </h4>
-          <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
-          <p>Sincerely</p>
-          <p>Not Found  Pvt. Ltd. </p>
-          <h4 className="mt-5">Our Address</h4>
-          <p>Not-found ,Dhaka</p>
-          <p>Bangladesh</p>     
-       
-        </div>
-      `
-  };
-  transporter1.sendMail(mailOptons, function (err, data) {
-    if (err) {
-      console.log('something is wrong', err);
-    } else {
-      console.log('Email sent', data);
-    }
-  })
+    const mailOptons = {
+      from: "notfound404.picktimely@gmail.com",
+      to: e,
+      subject: `Remainder interview  ${description} for  on  at  is confirmed`,
+      text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+      html: `
+          <div> 
+            <p>Hello, ${name},</p>
+            <h4>You are not selected for online interview ${description}</h4>
+            <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+            <h4>Looking forward to see you on at ${timeSlot} </h4>
+            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+            <p>Sincerely</p>
+            <p>Not Found  Pvt. Ltd. </p>
+            <h4 className="mt-5">Our Address</h4>
+            <p>Not-found ,Dhaka</p>
+            <p>Bangladesh</p>     
+         
+          </div>
+        `
+    };
+    transporter1.sendMail(mailOptons, function (err, data) {
+      if (err) {
+        console.log('something is wrong', err);
+      } else {
+        console.log('Email sent', data);
+      }
+    })
+  
+    
+  }
+ 
 
+  function remainder(schedule){
+    remainderSchedule(schedule)
+  }
 
-}
-function remainder(schedule){
-  remainderSchedule(schedule)
-}
 
 
 
@@ -368,10 +393,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/schedule", async (req, res) => {
-      const result = await meetingCollection.find().toArray();
-      res.send(result)
-    });
+  
 
     app.get("/schedule/dateWise", async (req, res) => {
       const date = req.query.dateFormat;
@@ -427,7 +449,13 @@ async function run() {
       const schedule = req.body;
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
-      setTimeout(remainder,8000,schedule)
+        
+      const diff= 86400000;
+
+      
+        setTimeout(remainder,diff,schedule)
+      
+  
       // remainder()
       res.send(result);
     });
@@ -452,8 +480,15 @@ async function run() {
     });
 
     app.get("/schedule", async (req, res) => {
+
+      
       const result = await meetingCollection.find().toArray();
-      console.log(result)
+      res.send(result)
+    });
+
+    app.get("/schedule/reminder", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      remainderSchedule(result)
       res.send(result)
     });
 

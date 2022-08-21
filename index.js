@@ -3,10 +3,13 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config();
+const nodemailer = require('nodemailer');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { response } = require('express');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
+
 
 
 app.use(cors())
@@ -16,25 +19,37 @@ app.use(express.json());
 
 
 
+const differenceOfTime = (previousTime) => {
+  const currentTime = (parseInt(time.slice(0, 2)) * 60) + parseInt(time.slice(3, 5));
+  const previousTime1 = (parseInt(previousTime.slice(0, 2)) * 60) + parseInt(previousTime.slice(3, 5));
+  return previousTime1 - currentTime;
+}
+// ////console.log(diffesrenceOfTime("19:50"));
 
-app.get('/', (req, res) => {
-  res.send('server running')
-})
+
 
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.Email,
-    pass: process.env.MailerPassword
+    user: "notfound404.picktimely@gmail.com",
+    pass: "uzunpmoxinphglaz"
+  }
+});
+const transporter1 = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: "notfound404.picktimely@gmail.com",
+    pass: "uzunpmoxinphglaz"
   }
 });
 
+
+
+
 function sendScheduleMail(schedule) {
-  const { timeSlot, name, email, description, linking, dateFormat } = schedule;
-
-  const e = email.map(email => email.email)
-
+  const { timeSlot, name, email, description, dateFormat } = schedule;
+  const e = email.map(email => email.email);
 
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
@@ -42,31 +57,113 @@ function sendScheduleMail(schedule) {
     subject: `Your interview  ${description} for  on  at  is confirmed`,
     text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
     html: `
-      <div> 
-        <p>Hello, ${name},</p>
-        <h4>You are selected for online interview ${description}</h4>
-        <h4>Your interview  for  is confirmed ${dateFormat}</h4>
-        <h4>Looking forward to see you on at ${timeSlot} </h4>
-        <p>Join this link  <a href=${linking}>Meeting</a>  </p>
-        <p>Sincerely</p>
-        <p>Not Found  Pvt. Ltd. </p>
-        <h4 className="mt-5">Our Address</h4>
-        <p>Not-found ,Dhaka</p>
-        <p>Bangladesh</p>     
-     
-      </div>
-    `
+        <div> 
+          <p>Hello, ${name},</p>
+          <h4>You are not selected for online interview ${description}</h4>
+          <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+          <h4>Looking forward to see you on at ${timeSlot} </h4>
+          <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+          <p>Sincerely</p>
+          <p>Not Found  Pvt. Ltd. </p>
+          <h4 className="mt-5">Our Address</h4>
+          <p>Not-found ,Dhaka</p>
+          <p>Bangladesh</p>     
+       
+        </div>
+      `
   };
+
+
 
   transporter.sendMail(mailOptons, function (err, data) {
     if (err) {
-      console.log('something is wrong', err);
+      // ////console.log('something is wrong', err);
     } else {
-      // console.log('Email sent', data);
+      // ////console.log('Email sent', data);
     }
   });
 
 }
+
+
+const today = new Date();
+
+const date = (today.getMonth() + 1) + "/" + today.getDate() + "/" + today.getFullYear();
+const time = today.getHours() + ":" + today.getMinutes();
+// ////console.log(date);
+// ////console.log(time);
+
+const request = require('request');
+request('https://pick-timely.herokuapp.com/schedule', function (error, response, body) {
+  // console.error('error:', error); // Print the error if one occurred
+  // ////console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+  // Print the HTML for the Google homepage.
+  // ////console.log(body) 
+
+})
+
+
+
+
+
+
+
+
+
+
+function remainderSchedule(schedule) {
+  // ////console.log("hello from remainder");
+  const { timeSlot, name, email, description, dateFormat } = schedule;
+
+
+  // ////console.log(timeSlot, dateFormat);
+
+  const e = email.map(email => email.email)
+  const mailOptons = {
+    from: "notfound404.picktimely@gmail.com",
+    to: e,
+    subject: `Remainder interview  ${description} for  on  at  is confirmed`,
+    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+    html: `
+          <div> 
+            <p>Hello, ${name},</p>
+            <h4>You are not selected for online interview ${description}</h4>
+            <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+            <h4>Looking forward to see you on at ${timeSlot} </h4>
+            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+            <p>Sincerely</p>
+            <p>Not Found  Pvt. Ltd. </p>
+            <h4 className="mt-5">Our Address</h4>
+            <p>Not-found ,Dhaka</p>
+            <p>Bangladesh</p>     
+         
+          </div>
+        `
+  };
+  transporter1.sendMail(mailOptons, function (err, data) {
+    if (err) {
+      // ////console.log('something is wrong', err);
+    } else {
+      // ////console.log('Email sent', data);
+    }
+  })
+
+
+}
+
+
+function remainder(schedule) {
+  remainderSchedule(schedule)
+}
+
+
+
+
+
+
+app.get('/', (req, res) => {
+  res.send('server running')
+})
 
 
 
@@ -92,10 +189,9 @@ function verifyJWT(req, res, next) {
 const uri = `mongodb+srv://${process.env.Name}:${process.env.Pass}@cluster0.sbqudjz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-
-
 async function run() {
-  try { 
+
+  try {
 
     await client.connect();
     const userCollection = client.db("Pick-Timely").collection("userCollection");
@@ -107,6 +203,7 @@ async function run() {
     const easyScheduleCollection = client.db("Pick-Timely").collection("easySchedule")
     const blogsCollection = client.db("Pick-Timely").collection("blogs")
     const developersCollection = client.db("Pick-Timely").collection("developersCollection")
+
 
 
 
@@ -170,7 +267,7 @@ async function run() {
     //get an specific host for arrange meeting
     app.get('/arrangeMeeting/:hostId', async (req, res) => {
       const id = req.params.hostId;
-      console.log(id)
+      // ////console.log(id)
       const query = { _id: ObjectId(id) }
       const result = await hostCollection.findOne(query);
       res.send(result)
@@ -219,7 +316,7 @@ async function run() {
     //create a payment intent
     app.post('/createPaymentIntent', async (req, res) => {
       const { price } = req.body;
-      // console.log(cost)
+      // ////console.log(cost)
       const amount = parseInt(price) * 100;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -254,24 +351,25 @@ async function run() {
       res.send(result)
     });
 
+
     app.post('/hoster', async (req, res) => {
       const newSchedule = req.body;
       const result = await hostCollection.insertOne(newSchedule);
       res.send(result);
     });
 
-  
-    
-    
-    app.get('/hoster/:email',async(req,res)=>{
+
+
+
+    app.get('/hoster/:email', async (req, res) => {
       const email = req.params.email;
-      const query = {email:email}
+      const query = { email: email }
       const result = await hostCollection.find(query).toArray()
       res.send(result)
     })
 
-     //Get all post.
-     app.get('/blog', async (req, res) => {
+    //Get all post.
+    app.get('/blog', async (req, res) => {
       const query = {};
       const result = await blogsCollection.find(query).toArray();
       res.send(result)
@@ -329,7 +427,7 @@ async function run() {
 
     app.delete('/hoster/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // ////console.log(id);
       const query = { _id: ObjectId(id) };
       const result = await hostCollection.deleteOne(query);
       res.send(result);
@@ -341,7 +439,7 @@ async function run() {
       const date = req.query.dateFormat;
       const today = new Date();
       const day = today.toLocaleDateString();
-      console.log(date);
+      // ////console.log(date);
       if (date === day) {
         const query = parseInt({ dateFormat: date });
         const result = await meetingCollection.find(query).toArray();
@@ -389,7 +487,7 @@ async function run() {
     //create a payment intent
     app.post('/createPaymentIntent', async (req, res) => {
       const { price } = req.body;
-      // console.log(cost)
+      // ////console.log(cost)
       const amount = parseInt(price) * 100;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -431,7 +529,65 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await hostCollection.findOne(query);
+      res.send(result);
+    });
 
+    //hoster update
+    app.put('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      const hoster = req.body;
+      const filtered = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          hoster: hoster.hoster,
+          email: hoster.email,
+          duration: hoster.duration,
+          eventType: hoster.eventType,
+          description: hoster.description,
+          image: hoster.image,
+        }
+      };
+      const result = await hostCollection.updateOne(filtered, updatedDoc, options);
+      res.send(result);
+    })
+
+    app.get('/hoster/:email', async (req, res) => {
+      const email = req.params.email;
+      ////console.log(email);
+      const query = { email: email };
+      const result = await hostCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.delete('/hoster/:id', async (req, res) => {
+      const id = req.params.id;
+      ////console.log(id);
+      const query = { _id: ObjectId(id) };
+      const result = await hostCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+
+    app.get("/schedule/dateWise", async (req, res) => {
+      const date = req.query.dateFormat;
+      const today = new Date();
+      const day = today.toLocaleDateString();
+      ////console.log(date);
+      if (date === day) {
+        const query = parseInt({ dateFormat: date });
+        const result = await meetingCollection.find(query).toArray();
+        return res.send(result);
+      } else {
+
+        return res.send('<h1>No schedule available</h1>');
+      }
+    });
 
     app.put('/schedule/:id', async (req, res) => {
       const id = req.params.id;
@@ -440,9 +596,8 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          host: schedule.host,
-          type: schedule.type,
           timeSlot: schedule.timeSlot,
+          name: schedule.name,
           email: schedule.email,
           description: schedule.description,
           dateFormat: schedule.dateFormat,
@@ -455,7 +610,7 @@ async function run() {
 
     app.get("/schedule/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      ////console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -463,7 +618,7 @@ async function run() {
 
     app.get("/schedule/dateSchedule", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      ////console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -474,7 +629,15 @@ async function run() {
     app.post('/schedule', async (req, res) => {
       const schedule = req.body;
       const result = await meetingCollection.insertOne(schedule);
-      sendScheduleMail(schedule)
+      sendScheduleMail(schedule);
+
+      const diff = 86400000;
+
+
+      setTimeout(remainder, diff, schedule)
+
+
+      // remainder()
       res.send(result);
     });
 
@@ -489,12 +652,41 @@ async function run() {
 
 
 
+    app.post('/schedule', async (req, res) => {
+      const newSchedule = req.body;
+      const { email, dateFormat } = newSchedule
+      const result = await meetingCollection.insertOne(newSchedule);
+      ////console.log(email, dateFormat)
+      res.send(result);
+    });
+
     app.get("/schedule", async (req, res) => {
+
+
       const result = await meetingCollection.find().toArray();
-      // console.log(result)
       res.send(result)
     });
 
+
+    app.get("/schedule/reminder", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      remainderSchedule(result)
+      res.send(result)
+    });
+
+
+
+    app.get("/scheduleList", async (req, res) => {
+
+      const newSchedule = req.body;
+      const { email, dateFormat } = newSchedule
+
+      const result = await meetingCollection.find({ date: dateFormat }).toArray();
+      ////console.log(result)
+      res.send(result);
+
+
+    })
 
 
 
@@ -506,11 +698,12 @@ async function run() {
       const { email, dateFormat } = newSchedule
 
       const result = await meetingCollection.find({ date: dateFormat }).toArray();
-      console.log(result)
+      ////console.log(result)
       res.send(result);
 
 
     })
+
 
 
     // all of review api
@@ -518,6 +711,7 @@ async function run() {
     app.post('/review', async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
+
       res.send(result);
     })
 
@@ -567,6 +761,28 @@ async function run() {
 
 
 
+    // basic server
+    app.get('/', async (req, res) => {
+      res.send('server running')
+    })
+
+
+
+
+    
+
+    app.get('/review', async (req, res) => {
+      const query = {};
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result)
+    })
+
+    app.get('/customers', async (req, res) => {
+      const query = {};
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    })
+
   }
 
   finally {
@@ -576,21 +792,21 @@ async function run() {
 
 
 
-  // basic server
-  app.get('/', async (req, res) => {
-    res.send('server running')
-  })
-
-
-
-
-  app.listen(port, () => {
-    console.log('server running on the port ', port);
-  })
-
 }
 
+
+// basic server
+app.get('/', async (req, res) => {
+  res.send('server running')
+})
+
+
+
+
+app.listen(port, () => {
+  console.log('server running on the port ', port);
+})
+
+
+
 run().catch(console.dir)
-
-
-

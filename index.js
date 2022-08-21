@@ -2,12 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const app = express();
-require('dotenv').config()
-
-// const nodemailer = require('nodemailer');
-
-// const Sib=require('sib-api-v3-sdk')
-
+require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
@@ -100,7 +95,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 async function run() {
-  try {
+  try { 
 
     await client.connect();
     const userCollection = client.db("Pick-Timely").collection("userCollection");

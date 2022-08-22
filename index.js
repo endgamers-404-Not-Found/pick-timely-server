@@ -376,12 +376,6 @@ app.post('/schedule', async (req, res) => {
     res.send(result);
 });
 
-app.get("/schedule", async (req, res) => {
-    const result = await meetingCollection.find().toArray();
-    console.log(result)
-    res.send(result)
-});
-
 
 
 app.get("/scheduleList", async (req, res) => {

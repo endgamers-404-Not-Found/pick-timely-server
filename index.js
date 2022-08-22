@@ -46,19 +46,29 @@ const transporter1 = nodemailer.createTransport({
     pass: "uzunpmoxinphglaz"
   }
 });
+const transporterReschedule = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: "notfound404.picktimely@gmail.com",
+    pass: "uzunpmoxinphglaz"
+  }
+});
 
 
 
 
 function sendScheduleMail(schedule) {
   const { timeSlot, name, email, description, dateFormat } = schedule;
+  const reminderSchedule= dateFormat ;
+  console.log(reminderSchedule)
+
   const e = email.map(email => email.email);
 
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
     to: e,
     subject: `Your interview  ${description} for  on  at  is confirmed`,
-    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+    text: `We are inviting you from schedulemeeting  ${dateFormat}`,
     html: `
         <div> 
           <p>Hello, ${name},</p>
@@ -68,12 +78,15 @@ function sendScheduleMail(schedule) {
           <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
           <p>Sincerely</p>
           <p>Are you interested for meeting?</p>
-          <button>Yes</button>
-          <button>No</button>
+          <button style="padding:10px;border:none;background: blue;">Yes</button>
+          <button style="padding:10px;border:none;background: red;">No</button>
+        
           <p>Not Found  Pvt. Ltd. </p>
           <h4 className="mt-5">Our Address</h4>
           <p>Not-found ,Dhaka</p>
-          <p>Bangladesh</p>     
+          <p>Bangladesh</p>    
+         
+          
        
         </div>
       `
@@ -92,24 +105,59 @@ function sendScheduleMail(schedule) {
 }
 
 
+
 const today = new Date();
 
 const date = (today.getMonth() + 1) + "/" + today.getDate() + "/" + today.getFullYear();
 const time = today.getHours() + ":" + today.getMinutes();
-console.log(date);
-console.log(time);
 
-/* const request = require('request');
-request('https://pick-timely.herokuapp.com/schedule', function (error, response, body) {
-  console.error('error:', error); // Print the error if one occurred
-  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
- // Print the HTML for the Google homepage.
-// console.log(body) 
+let timerQueues = new Map(); //to track active timers
 
-})  */
+const magicFunction = (givenTime, user) => {
 
 
+  let curTime = new Date().toLocaleString();
+  let newDate = new Date(curTime).getTime() / 1000;
 
+  if (newDate >= givenTime) {
+    //timer logic
+    console.log("done", user);
+    clearInterval(timerQueues.get(user));
+    timerQueues.delete(user);
+    console.log(timerQueues.keys());
+  }
+  console.log(newDate, givenTime);
+};
+
+async function mainCall(sayData) {
+  const { timeSlot, name, email, dateFormat } = sayData;
+
+  const reminderSchedule= dateFormat + " " +timeSlot.trim() +":00" + " PM";
+  // console.log(reminderSchedule)
+
+
+  let givenDate = new Date(reminderSchedule).toLocaleString();
+  let givenTime = new Date(givenDate).getTime() / 1000; //get local time in seconds (starting from jan 1 1970 in milis)
+
+  timerQueues.set(
+    name,
+    setInterval(() => {
+      magicFunction(givenTime, name);
+    }, 1000)
+  );
+  console.log(timerQueues.keys());
+}
+
+/* let sayData = [
+  { user: "user1", date: "8/26/2022 07:40:00 AM" }, //get input in this format or convert to this format
+  { user: "user2", date: "8/27/2022 07:41:00 PM" },
+]; */
+// mainCall(sayData[0]);
+// mainCall(sayData[1]);
+/* mainCall({timeSlot:"10:33 ",
+  dateFormat:"08/22/2022",
+  name:"meherab"
+}); */
 
 
 
@@ -133,10 +181,14 @@ function remainderSchedule(schedule) {
     html: `
           <div> 
             <p>Hello, ${name},</p>
-            <h4>You are not selected for online interview ${description}</h4>
+            <h4>You are  selected for online interview ${description}</h4>
             <h4>Your interview  for  is confirmed ${dateFormat}</h4>
             <h4>Looking forward to see you on at ${timeSlot} </h4>
             <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+
+            <p>Are you interested for meeting?</p>
+            <button style="padding:10px;border:none;background: blue;">Yes</button>
+            <button style="padding:10px;border:none;background: red;">No</button>
             <p>Sincerely</p>
             <p>Not Found  Pvt. Ltd. </p>
             <h4 className="mt-5">Our Address</h4>
@@ -153,15 +205,55 @@ function remainderSchedule(schedule) {
       console.log('Email sent', data);
     }
   })
-
-
 }
+
+
+function sendingReshedule(schedule) {
+  console.log("hello from remainder");
+  const { timeSlot, name, email, description, dateFormat } = schedule;
+
+
+  console.log(timeSlot, dateFormat);
+
+  const e = email.map(email => email.email)
+  const mailReschedule = {
+    from: "notfound404.picktimely@gmail.com",
+    to: e,
+    subject: `Your interview resheduling  ${description} for  on  at  is confirmed`,
+    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+    html: `
+          <div> 
+            <p>Hello, ${name},</p>
+            <h4>You are  selected for online interview ${description}</h4>
+            <h4>Your interview  for  is confirmed new date ${dateFormat}</h4>
+            <h4>Looking forward to see you on at ${timeSlot} </h4>
+            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+
+           <p style="color:red;">tesing hello check</p>
+            <p>Sincerely</p>
+            <p>Not Found  Pvt. Ltd. </p>
+            <h4 className="mt-5">Our Address</h4>
+            <p>Not-found ,Dhaka</p>
+            <p>Bangladesh</p>     
+           
+          </div>
+        `
+  };
+  transporterReschedule.sendMail(mailReschedule, function (err, data) {
+    if (err) {
+      console.log('something is wrong', err);
+    } else {
+      console.log('Email sent', data);
+    }
+  })
+}
+
 const differenceOfTime = (previousTime) => {
   const currentTime = (parseInt(time.slice(0, 2)) * 60) + parseInt(time.slice(3, 5));
   const previousTime1 = (parseInt(previousTime.slice(0, 2)) * 60) + parseInt(previousTime.slice(3, 5));
   return previousTime1 - currentTime;
 }
-console.log(differenceOfTime("10:20"))
+// console.log(differenceOfTime("10:20"))
 
 function remainder(schedule) {
   remainderSchedule(schedule)
@@ -429,6 +521,7 @@ async function run() {
         }
       };
       const result = await meetingCollection.updateOne(filtered, updatedDoc, options);
+      sendingReshedule(schedule)
       res.send(result);
     })
 
@@ -453,11 +546,9 @@ async function run() {
       const schedule = req.body;
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
+      mainCall(schedule)
+      // remainderSchedule(schedule)
      
-      const diff = 86400000;
-      setTimeout(remainder, diff, schedule)
-
-
       // remainder()
       res.send(result);
     });

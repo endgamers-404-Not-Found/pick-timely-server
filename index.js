@@ -209,7 +209,7 @@ async function run() {
 
 
     //post a new user
-    app.post('/addUser', verifyJWT, async (req, res) => {
+    app.post('/addUser', async (req, res) => {
       const name = req.body.name;
       const email = req.body.email;
       const result = await userCollection.insertOne({ name, email })

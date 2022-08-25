@@ -93,6 +93,7 @@ const time = today.getHours() + ":" + today.getMinutes();
 // ////console.log(date);
 // ////console.log(time);
 
+
 const request = require('request');
 request('https://pick-timely.herokuapp.com/schedule', function (error, response, body) {
   // console.error('error:', error); // Print the error if one occurred
@@ -101,6 +102,7 @@ request('https://pick-timely.herokuapp.com/schedule', function (error, response,
   // ////console.log(body) 
 
 })
+
 
 
 
@@ -209,7 +211,8 @@ async function run() {
 
 
     //post a new user
-    app.post('/addUser', verifyJWT, async (req, res) => {
+
+    app.post('/addUser', async (req, res) => {
       const name = req.body.name;
       const email = req.body.email;
       const result = await userCollection.insertOne({ name, email })
@@ -375,6 +378,17 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/blog/:id',async(req,res)=>{
+      const id = req.params.id;
+      const result = await blogsCollection.findOne({_id:ObjectId(id)})
+      res.send(result);
+    })
+
+    app.post('/blog',async(req,res)=>{
+      const blog= req.body;
+      const result = await blogsCollection.insertOne(blog)
+      res.send(result)
+    })
 
 
     // load all user 
@@ -769,7 +783,7 @@ async function run() {
 
 
 
-    
+
 
     app.get('/review', async (req, res) => {
       const query = {};

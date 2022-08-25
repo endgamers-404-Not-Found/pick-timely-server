@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 // const nodemailer = require('nodemailer');
 
 
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, Logger } = require('mongodb');
 const { response } = require('express');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
@@ -27,7 +27,7 @@ app.use(express.json());
 
 
 
-// console.log(diffesrenceOfTime("19:50"));
+// console.log(differenceOfTime("19:50"));
 
 
 
@@ -39,6 +39,7 @@ const transporter = nodemailer.createTransport({
     pass: "uzunpmoxinphglaz"
   }
 });
+
 const transporter1 = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -59,8 +60,6 @@ const transporterReschedule = nodemailer.createTransport({
 
 function sendScheduleMail(schedule) {
   const { timeSlot, name, email, description, dateFormat } = schedule;
-  const reminderSchedule= dateFormat ;
-  console.log(reminderSchedule)
 
   const e = email.map(email => email.email);
 
@@ -131,9 +130,10 @@ const magicFunction = (givenTime, user) => {
 
 async function mainCall(sayData) {
   const { timeSlot, name, email, dateFormat } = sayData;
+  console.log(name)
 
-  const reminderSchedule= dateFormat + " " +timeSlot.trim() +":00" + " PM";
-  // console.log(reminderSchedule)
+  const reminderSchedule = dateFormat + " " + timeSlot.trim() + ":00" + " " + "PM";
+  console.log(reminderSchedule)
 
 
   let givenDate = new Date(reminderSchedule).toLocaleString();
@@ -165,46 +165,48 @@ async function mainCall(sayData) {
 
 
 
-function remainderSchedule(schedule) {
-  console.log("hello from remainder");
-  const { timeSlot, name, email, description, dateFormat } = schedule;
-
-
-  console.log(timeSlot, dateFormat);
-
-  const e = email.map(email => email.email)
-  const mailOptons = {
-    from: "notfound404.picktimely@gmail.com",
-    to: e,
-    subject: `Remainder interview  ${description} for  on  at  is confirmed`,
-    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
-    html: `
-          <div> 
-            <p>Hello, ${name},</p>
-            <h4>You are  selected for online interview ${description}</h4>
-            <h4>Your interview  for  is confirmed ${dateFormat}</h4>
-            <h4>Looking forward to see you on at ${timeSlot} </h4>
-            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
-
-            <p>Are you interested for meeting?</p>
-            <button style="padding:10px;border:none;background: blue;">Yes</button>
-            <button style="padding:10px;border:none;background: red;">No</button>
-            <p>Sincerely</p>
-            <p>Not Found  Pvt. Ltd. </p>
-            <h4 className="mt-5">Our Address</h4>
-            <p>Not-found ,Dhaka</p>
-            <p>Bangladesh</p>     
-         
-          </div>
-        `
-  };
-  transporter1.sendMail(mailOptons, function (err, data) {
-    if (err) {
-      console.log('something is wrong', err);
-    } else {
-      console.log('Email sent', data);
-    }
-  })
+if(mainCall == true){
+  function remainderSchedule(schedule) {
+    console.log("hello from remainder");
+    const { timeSlot, name, email, description, dateFormat } = schedule;
+  
+  
+    console.log(timeSlot, dateFormat);
+  
+    const e = email.map(email => email.email)
+    const mailOptons = {
+      from: "notfound404.picktimely@gmail.com",
+      to: e,
+      subject: `Remainder interview  ${description} for  on  at  is confirmed`,
+      text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
+      html: `
+            <div> 
+              <p>Hello, ${name},</p>
+              <h4>You are  selected for online interview ${description}</h4>
+              <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+              <h4>Looking forward to see you on at ${timeSlot} </h4>
+              <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+  
+              <p>Are you interested for meeting?</p>
+              <button style="padding:10px;border:none;background: blue;">Yes</button>
+              <button style="padding:10px;border:none;background: red;">No</button>
+              <p>Sincerely</p>
+              <p>Not Found  Pvt. Ltd. </p>
+              <h4 className="mt-5">Our Address</h4>
+              <p>Not-found ,Dhaka</p>
+              <p>Bangladesh</p>     
+           
+            </div>
+          `
+    };
+    transporter1.sendMail(mailOptons, function (err, data) {
+      if (err) {
+        console.log('something is wrong', err);
+      } else {
+        console.log('Email sent', data);
+      }
+    })
+  }
 }
 
 
@@ -354,7 +356,7 @@ async function run() {
     app.get('/admin/:email', async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
-      const isAdmin = user.role === 'admin';
+      const isAdmin = user?.role === 'admin';
       res.send({ admin: isAdmin })
     })
 
@@ -447,7 +449,7 @@ async function run() {
     });
 
     app.get('/hoster/:id', async (req, res) => {
-      const id = req.params.id;
+      const id = (req.params.id);
       const query = { _id: ObjectId(id) };
       const result = await hostCollection.findOne(query);
       res.send(result);
@@ -475,7 +477,7 @@ async function run() {
 
     app.get('/hoster/:email', async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email };
       const result = await hostCollection.findOne(query);
       res.send(result);
@@ -527,7 +529,7 @@ async function run() {
 
     app.get("/schedule/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -547,8 +549,8 @@ async function run() {
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
       mainCall(schedule)
-      // remainderSchedule(schedule)
-     
+      remainderSchedule(schedule)
+
       // remainder()
       res.send(result);
     });
@@ -556,6 +558,11 @@ async function run() {
 
     app.delete("/schedule/:id", async (req, res) => {
       const id = req.params.id;
+     /*  axios.get(`http://localhost:5000/mySchedules/azimchy994@gmail.com`)
+        .then(function (response) {
+          // handle success
+          console.log(response);
+        }) */
       const query = { _id: ObjectId(id) };
       const result = await meetingCollection.deleteOne(query);
       res.send(result)
@@ -579,11 +586,11 @@ async function run() {
       res.send(result)
     });
 
-    app.get("/schedule/reminder", async (req, res) => {
+   /*  app.get("/schedule/reminder", async (req, res) => {
       const result = await meetingCollection.find().toArray();
       remainderSchedule(result)
       res.send(result)
-    });
+    }); */
 
 
 
@@ -628,8 +635,19 @@ async function run() {
 
   }
 
-  finally {
-    // client.close();
+  catch (error) {
+    errorHandler(error)
+  }
+
+  function errorHandler(error) {
+    const { name, message, stack } = error;
+    Logger.error({
+      name,
+      message,
+      stack
+    })
+
+    console.log("internal error")
   }
 
 

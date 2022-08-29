@@ -359,7 +359,6 @@ async function run() {
 
     app.delete('/hoster/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = { _id: ObjectId(id) };
       const result = await hostCollection.deleteOne(query);
       res.send(result);
@@ -425,7 +424,7 @@ async function run() {
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
       const diff=differenceOfTime(schedule.timeSlot);
-        if(await diff===1){
+        if( diff===1){
 
         setTimeout(remainder,1000,schedule)
       }
@@ -436,6 +435,7 @@ async function run() {
 
     app.delete("/schedule/:id", async (req, res) => {
       const id = req.params.id;
+      console.log(req.params)
       const query = { _id: ObjectId(id) };
       const result = await meetingCollection.deleteOne(query);
       res.send(result)
@@ -457,7 +457,15 @@ async function run() {
       console.log(result)
       res.send(result)
     });
-
+    
+    app.get("/schedule/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await meetingCollection.findOne(query);
+      console.log(result)
+      res.send(result)
+    });
+   
 
 
     app.get("/scheduleList", async (req, res) => {
@@ -496,6 +504,25 @@ async function run() {
     app.get('/customers', async (req, res) => {
       const query = {};
       const result = await userCollection.find(query).toArray();
+      res.send(result);
+    })
+    app.get('/easySchedule', async (req, res) => {
+      const result = await easyScheduleCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get('/easySchedule/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await easyScheduleCollection.findOne(query);
+      res.send(result);
+    });
+
+
+    app.get('/mySchedules/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { host: email }
+      const result = await meetingCollection.find(filter).toArray();
       res.send(result);
     })
 

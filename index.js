@@ -4,13 +4,12 @@ const jwt = require('jsonwebtoken');
 const app = express();
 require('dotenv').config();
 const nodemailer = require('nodemailer');
-
+require('dotenv').config();
 
 // const nodemailer = require('nodemailer');
 
 
-const { MongoClient, ServerApiVersion, ObjectId, Logger } = require('mongodb');
-const { response } = require('express');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 // const nodemailer = require('nodemailer');
@@ -22,13 +21,22 @@ app.use(express.json());
 
 
 
+const today = new Date();
+
+const date = (today.getMonth()+1)+"/"+today.getDate()+"/"+ today.getFullYear();
+const time = today.getHours() + ":" + today.getMinutes();
+console.log(date);
+console.log(time
+);
 
 
 
-
-
-// console.log(differenceOfTime("19:50"));
-
+const differenceOfTime=(previousTime)=>{
+    const currentTime=(parseInt(time.slice(0,2))*60)+parseInt(time.slice(3,5));
+    const previousTime1=(parseInt(previousTime.slice(0,2))*60)+parseInt(previousTime.slice(3,5));
+    return previousTime1-currentTime;
+}
+// console.log(differenceOfTime("20:20"));
 
 
 
@@ -39,15 +47,7 @@ const transporter = nodemailer.createTransport({
     pass: "uzunpmoxinphglaz"
   }
 });
-
 const transporter1 = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: "notfound404.picktimely@gmail.com",
-    pass: "uzunpmoxinphglaz"
-  }
-});
-const transporterReschedule = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: "notfound404.picktimely@gmail.com",
@@ -60,39 +60,32 @@ const transporterReschedule = nodemailer.createTransport({
 
 function sendScheduleMail(schedule) {
   const { timeSlot, name, email, description, dateFormat } = schedule;
-
   const e = email.map(email => email.email);
-
+  
   const mailOptons = {
     from: "notfound404.picktimely@gmail.com",
     to: e,
     subject: `Your interview  ${description} for  on  at  is confirmed`,
-    text: `We are inviting you from schedulemeeting  ${dateFormat}`,
+    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
     html: `
         <div> 
           <p>Hello, ${name},</p>
-          <h4>You are selected for online interview ${description}</h4>
+          <h4>You are not selected for online interview ${description}</h4>
           <h4>Your interview  for  is confirmed ${dateFormat}</h4>
           <h4>Looking forward to see you on at ${timeSlot} </h4>
           <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
           <p>Sincerely</p>
-          <p>Are you interested for meeting?</p>
-          <button style="padding:10px;border:none;background: blue;">Yes</button>
-          <button style="padding:10px;border:none;background: red;">No</button>
-        
           <p>Not Found  Pvt. Ltd. </p>
           <h4 className="mt-5">Our Address</h4>
           <p>Not-found ,Dhaka</p>
-          <p>Bangladesh</p>    
-         
-          
+          <p>Bangladesh</p>     
        
         </div>
       `
   };
-
-
-
+  
+  
+  
   transporter.sendMail(mailOptons, function (err, data) {
     if (err) {
       console.log('something is wrong', err);
@@ -103,101 +96,31 @@ function sendScheduleMail(schedule) {
 
 }
 
-
-
-const today = new Date();
-
-const date = (today.getMonth() + 1) + "/" + today.getDate() + "/" + today.getFullYear();
-const time = today.getHours() + ":" + today.getMinutes();
-
-let timerQueues = new Map(); //to track active timers
-
-const magicFunction = (givenTime, user) => {
-
-
-  let curTime = new Date().toLocaleString();
-  let newDate = new Date(curTime).getTime() / 1000;
-
-  if (newDate >= givenTime) {
-    //timer logic
-    console.log("done", user);
-    clearInterval(timerQueues.get(user));
-    timerQueues.delete(user);
-    console.log(timerQueues.keys());
-  }
-  console.log(newDate, givenTime);
-};
-
-async function mainCall(sayData) {
-  const { timeSlot, name, email, dateFormat } = sayData;
-  console.log(name)
-
-  const reminderSchedule = dateFormat + " " + timeSlot.trim() + ":00" + " " + "PM";
-  console.log(reminderSchedule)
-
-
-  let givenDate = new Date(reminderSchedule).toLocaleString();
-  let givenTime = new Date(givenDate).getTime() / 1000; //get local time in seconds (starting from jan 1 1970 in milis)
-
-  timerQueues.set(
-    name,
-    setInterval(() => {
-      magicFunction(givenTime, name);
-    }, 1000)
-  );
-  console.log(timerQueues.keys());
-}
-
-/* let sayData = [
-  { user: "user1", date: "8/26/2022 07:40:00 AM" }, //get input in this format or convert to this format
-  { user: "user2", date: "8/27/2022 07:41:00 PM" },
-]; */
-// mainCall(sayData[0]);
-// mainCall(sayData[1]);
-/* mainCall({timeSlot:"10:33 ",
-  dateFormat:"08/22/2022",
-  name:"meherab"
-}); */
-
-
-
-
-
-
-
-if(mainCall == true){
-  function remainderSchedule(schedule) {
-    console.log("hello from remainder");
-    const { timeSlot, name, email, description, dateFormat } = schedule;
+function remainderSchedule(schedule) {
+  console.log("hello from remainder");
+  const { timeSlot, name, email, description, dateFormat } = schedule;
   
-  
-    console.log(timeSlot, dateFormat);
-  
-    const e = email.map(email => email.email)
+  const e = email.map(email => email.email)
     const mailOptons = {
       from: "notfound404.picktimely@gmail.com",
       to: e,
       subject: `Remainder interview  ${description} for  on  at  is confirmed`,
       text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
       html: `
-            <div> 
-              <p>Hello, ${name},</p>
-              <h4>You are  selected for online interview ${description}</h4>
-              <h4>Your interview  for  is confirmed ${dateFormat}</h4>
-              <h4>Looking forward to see you on at ${timeSlot} </h4>
-              <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
-  
-              <p>Are you interested for meeting?</p>
-              <button style="padding:10px;border:none;background: blue;">Yes</button>
-              <button style="padding:10px;border:none;background: red;">No</button>
-              <p>Sincerely</p>
-              <p>Not Found  Pvt. Ltd. </p>
-              <h4 className="mt-5">Our Address</h4>
-              <p>Not-found ,Dhaka</p>
-              <p>Bangladesh</p>     
-           
-            </div>
-          `
+          <div> 
+            <p>Hello, ${name},</p>
+            <h4>You are not selected for online interview ${description}</h4>
+            <h4>Your interview  for  is confirmed ${dateFormat}</h4>
+            <h4>Looking forward to see you on at ${timeSlot} </h4>
+            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
+            <p>Sincerely</p>
+            <p>Not Found  Pvt. Ltd. </p>
+            <h4 className="mt-5">Our Address</h4>
+            <p>Not-found ,Dhaka</p>
+            <p>Bangladesh</p>     
+         
+          </div>
+        `
     };
     transporter1.sendMail(mailOptons, function (err, data) {
       if (err) {
@@ -206,61 +129,12 @@ if(mainCall == true){
         console.log('Email sent', data);
       }
     })
-  }
+  
+
 }
-
-
-function sendingReshedule(schedule) {
-  console.log("hello from remainder");
-  const { timeSlot, name, email, description, dateFormat } = schedule;
-
-
-  console.log(timeSlot, dateFormat);
-
-  const e = email.map(email => email.email)
-  const mailReschedule = {
-    from: "notfound404.picktimely@gmail.com",
-    to: e,
-    subject: `Your interview resheduling  ${description} for  on  at  is confirmed`,
-    text: `We are inviting you from schedulemeeting ltd ${dateFormat}`,
-    html: `
-          <div> 
-            <p>Hello, ${name},</p>
-            <h4>You are  selected for online interview ${description}</h4>
-            <h4>Your interview  for  is confirmed new date ${dateFormat}</h4>
-            <h4>Looking forward to see you on at ${timeSlot} </h4>
-            <p>Join this link  <a href="https://meet.google.com/cyw-kcbs-oya?pli=1&authuser=0">Meeting</a>  </p>
-
-           <p style="color:red;">tesing hello check</p>
-            <p>Sincerely</p>
-            <p>Not Found  Pvt. Ltd. </p>
-            <h4 className="mt-5">Our Address</h4>
-            <p>Not-found ,Dhaka</p>
-            <p>Bangladesh</p>     
-           
-          </div>
-        `
-  };
-  transporterReschedule.sendMail(mailReschedule, function (err, data) {
-    if (err) {
-      console.log('something is wrong', err);
-    } else {
-      console.log('Email sent', data);
-    }
-  })
-}
-
-const differenceOfTime = (previousTime) => {
-  const currentTime = (parseInt(time.slice(0, 2)) * 60) + parseInt(time.slice(3, 5));
-  const previousTime1 = (parseInt(previousTime.slice(0, 2)) * 60) + parseInt(previousTime.slice(3, 5));
-  return previousTime1 - currentTime;
-}
-// console.log(differenceOfTime("10:20"))
-
-function remainder(schedule) {
+function remainder(schedule){
   remainderSchedule(schedule)
 }
-
 
 
 
@@ -356,7 +230,7 @@ async function run() {
     app.get('/admin/:email', async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
-      const isAdmin = user?.role === 'admin';
+      const isAdmin = user.role === 'admin';
       res.send({ admin: isAdmin })
     })
 
@@ -449,7 +323,7 @@ async function run() {
     });
 
     app.get('/hoster/:id', async (req, res) => {
-      const id = (req.params.id);
+      const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await hostCollection.findOne(query);
       res.send(result);
@@ -477,7 +351,7 @@ async function run() {
 
     app.get('/hoster/:email', async (req, res) => {
       const email = req.params.email;
-      // console.log(email);
+      console.log(email);
       const query = { email: email };
       const result = await hostCollection.findOne(query);
       res.send(result);
@@ -485,13 +359,15 @@ async function run() {
 
     app.delete('/hoster/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = { _id: ObjectId(id) };
       const result = await hostCollection.deleteOne(query);
       res.send(result);
     });
 
-
+    app.get("/schedule", async (req, res) => {
+      const result = await meetingCollection.find().toArray();
+      res.send(result)
+    });
 
     app.get("/schedule/dateWise", async (req, res) => {
       const date = req.query.dateFormat;
@@ -523,13 +399,12 @@ async function run() {
         }
       };
       const result = await meetingCollection.updateOne(filtered, updatedDoc, options);
-      sendingReshedule(schedule)
       res.send(result);
     })
 
     app.get("/schedule/:email", async (req, res) => {
       const email = req.params.email;
-      // console.log(email);
+      console.log(email);
       const query = { email: email };
       const result = await meetingCollection.findOne(query);
       res.send(result);
@@ -548,9 +423,11 @@ async function run() {
       const schedule = req.body;
       const result = await meetingCollection.insertOne(schedule);
       sendScheduleMail(schedule);
-      mainCall(schedule)
-      remainderSchedule(schedule)
+      const diff=differenceOfTime(schedule.timeSlot);
+        if( diff===1){
 
+        setTimeout(remainder,1000,schedule)
+      }
       // remainder()
       res.send(result);
     });
@@ -558,11 +435,7 @@ async function run() {
 
     app.delete("/schedule/:id", async (req, res) => {
       const id = req.params.id;
-     /*  axios.get(`http://localhost:5000/mySchedules/azimchy994@gmail.com`)
-        .then(function (response) {
-          // handle success
-          console.log(response);
-        }) */
+      console.log(req.params)
       const query = { _id: ObjectId(id) };
       const result = await meetingCollection.deleteOne(query);
       res.send(result)
@@ -580,18 +453,19 @@ async function run() {
     });
 
     app.get("/schedule", async (req, res) => {
-
-
       const result = await meetingCollection.find().toArray();
+      console.log(result)
       res.send(result)
     });
-
-   /*  app.get("/schedule/reminder", async (req, res) => {
-      const result = await meetingCollection.find().toArray();
-      remainderSchedule(result)
+    
+    app.get("/schedule/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await meetingCollection.findOne(query);
+      console.log(result)
       res.send(result)
-    }); */
-
+    });
+   
 
 
     app.get("/scheduleList", async (req, res) => {
@@ -632,22 +506,30 @@ async function run() {
       const result = await userCollection.find(query).toArray();
       res.send(result);
     })
+    app.get('/easySchedule', async (req, res) => {
+      const result = await easyScheduleCollection.find().toArray();
+      res.send(result);
+    });
 
-  }
+    app.get('/easySchedule/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await easyScheduleCollection.findOne(query);
+      res.send(result);
+    });
 
-  catch (error) {
-    errorHandler(error)
-  }
 
-  function errorHandler(error) {
-    const { name, message, stack } = error;
-    Logger.error({
-      name,
-      message,
-      stack
+    app.get('/mySchedules/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { host: email }
+      const result = await meetingCollection.find(filter).toArray();
+      res.send(result);
     })
 
-    console.log("internal error")
+  }
+
+  finally {
+    // client.close();
   }
 
 

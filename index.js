@@ -244,7 +244,12 @@ async function run() {
       res.send(result)
     });
 
-
+    app.get('/schedule/:hostId',async(req,res)=>{
+      const id  = req.params.hostId;
+      const query = {_id:ObjectId(id)}
+      const result = await meetingCollection.findOne(query)
+      res.send(result)
+    })
 
     // admin role api 
     app.put('/allUser/admin/:email', async (req, res) => {
@@ -820,6 +825,6 @@ app.listen(port, () => {
   console.log('server running on the port ', port);
 })
 
-
+ 
 
 run().catch(console.dir) 

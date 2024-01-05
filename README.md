@@ -65,16 +65,45 @@
 - Cors
 - Axios
 
+
 ### Credentials
 
 User can create account and login from sign up page.
 
 #### For exploring the admin dashboard can use the following credentials
 
-- email - admin@gmail.com
+- Email
+<pre>
+<code id="code-to-copy">
+admin@gmail.com
+</code>
+</pre>
 
-- password - 123456
+- Password 
+<pre>
+<code id="code-to-copy">
+123456
+</code>
+</pre>
+
 
 ### Contact Us
 
-#### For any queries, feedback or suggestions contact with the development team from the contact page of the application or directly contact at notfound404.picktimely@gmail.com
+#### For any queries, feedback or suggestions contact with the development team from the contact page of the application or directly contact at 
+<pre>
+<code id="code-to-copy">
+notfound404.picktimely@gmail.com
+</code>
+</pre>
+ 
+Or contact with me diractly via
+
+#### Email  
+<pre>
+<code id="code-to-copy">
+faijul.azim.360@gmail.com 
+</code>
+</pre>
+
+#### [WhatsApp](https://api.whatsapp.com/send?phone=8801585449223) 
+#### [LinkedIn](https://www.linkedin.com/in/faijul-azim)
